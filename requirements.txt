@@ -1,0 +1,4 @@
+Flask
+psycopg2-binary
+Pillow
+PyMuPDF>=1.24,<2

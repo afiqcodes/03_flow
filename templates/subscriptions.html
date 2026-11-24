@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% from "macros.html" import type_icon, type_options %}
+
+{% block title %}Subscription Billing · flow{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/subscriptions.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="content billing-content">
+    <div class="heading billing-heading">
+        <div><p class="eyebrow">~/flow/subscriptions</p><h1>Subscriptions</h1></div>
+        <span class="item-count">{{ active_count }} active</span>
+    </div>
+    {% set save_message = 'Payment recorded in Expense Tracker.' if request.args.get('paid') == '1' else 'Subscription saved.' %}{% include 'save_notice.html' %}
+    {% if error %}<p class="upload-error-message" role="alert">{{ error }}</p>{% endif %}
+    <p class="billing-hint">Record each paid bill to add it to <a href="{{ url_for('expenses') }}">Expense Tracker ↗</a> and move its next billing date forward.</p>
+
+    <div class="stats-grid" aria-label="Billing overview">
+        <article class="stat-card"><span>monthly spend</span><strong>${{ "%.2f"|format(monthly_total) }}</strong><small>yearly plans normalized</small></article>
+        <article class="stat-card"><span>active plans</span><strong>{{ active_count }}</strong><small>of {{ subscriptions|length }} total</small></article>
+        <article class="stat-card"><span>due soon</span><strong>{{ upcoming }}</strong><small>in the next 30 days</small></article>
+    </div>
+
+    <div class="subscription-list">
+        <div class="subscription-list-header" aria-hidden="true"><span>service</span><span>cost</span><span>next charge</span><span>status</span><span></span></div>
+        {% for plan in subscriptions %}
+        <article id="subscription-{{ plan.id }}" class="subscription-row {% if not plan.active %}inactive{% endif %}">
+            <div class="service-name">{{ type_icon(plan.subscription_type) }}<div><strong>{{ plan.name }}</strong><small>{{ plan.subscription_type }} · {{ plan.billing_cycle }}</small><a class="payment-history" href="{{ url_for('expenses', subscription=plan.id) }}" aria-label="Payment history for {{ plan.name }}">payment history ↗</a></div></div>
+            <div class="plan-price"><strong>${{ "%.2f"|format(plan.price) }}</strong><small>/{{ 'mo' if plan.billing_cycle == 'monthly' else 'yr' }}</small></div>
+            <time datetime="{{ plan.next_billing_date }}">{{ plan.next_billing_date.strftime('%b %d, %Y') }}</time>
+            <form action="{{ url_for('toggle_subscription', subscription_id=plan.id) }}" method="POST"><button class="status-pill {% if plan.active %}is-active{% endif %}" type="submit">{{ 'active' if plan.active else 'paused' }}</button></form>
+            <div class="subscription-actions">
+                {% if plan.active and plan.price > 0 %}<a class="record-payment" href="{{ url_for('subscriptions', pay=plan.id, _anchor='subscription-payment-form') }}" aria-label="Record payment for {{ plan.name }}">record payment</a>{% endif %}
+                <form class="delete-form" action="{{ url_for('delete_subscription', subscription_id=plan.id) }}" method="POST" data-item-name="{{ plan.name }}" data-item-type="subscription"><button class="delete-button" type="submit" aria-label="Delete {{ plan.name }}">delete</button></form>
+            </div>
+        </article>
+        {% else %}
+        <div class="empty-state billing-empty"><p>no subscriptions yet.</p><span>use the input form to add your first plan</span></div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block status_label %}billing-ledger{% endblock %}
+
+{% block form_eyebrow %}finance / {{ 'payment' if payment_plan else 'new' }}{% endblock %}
+{% block form_title %}{{ 'Record payment' if payment_plan else 'Add subscription' }}{% endblock %}
+{% block form_description %}{{ 'Confirm a paid bill to record the expense and advance the next billing date.' if payment_plan else 'Record a recurring service and its next billing date.' }}{% endblock %}
+
+{% block form_panel %}
+{% if payment_plan %}
+<form id="subscription-payment-form" class="panel-form" action="{{ url_for('pay_subscription', subscription_id=payment_plan.id) }}" method="POST">
+    <input type="hidden" name="due_on" value="{{ payment_plan.next_billing_date.isoformat() }}">
+    <div class="payment-summary">
+        <strong>{{ payment_plan.name }}</strong>
+        <p>${{ '%.2f'|format(payment_plan.price) }} · {{ payment_plan.billing_cycle }} · Bills</p>
+        <p>Bill due {{ payment_plan.next_billing_date.strftime('%b %d, %Y') }}</p>
+    </div>
+    <div class="field"><label for="subscription-paid-on">payment date</label><input id="subscription-paid-on" name="paid_on" type="date" min="2000-01-01" max="{{ today }}" value="{{ today }}" required></div>
+    <p class="billing-hint">The full bill amount is recorded on the payment date. The schedule advances by one billing cycle, including for overdue bills.</p>
+    {% if not payment_plan.active %}<p class="billing-hint">Resume this subscription to record a payment.</p>{% elif payment_plan.price == 0 %}<p class="billing-hint">Free subscriptions do not need an expense recorded.</p>{% endif %}
+    <button class="panel-submit" type="submit" {% if not payment_plan.active or payment_plan.price == 0 %}disabled{% endif %}>record payment</button>
+    <a class="payment-history" href="{{ url_for('subscriptions') }}">cancel payment</a>
+</form>
+{% else %}
+<form class="panel-form" action="{{ url_for('add_subscription') }}" method="POST">
+    <div class="field">
+        <label for="subscription-name">service</label>
+        <input id="subscription-name" name="name" type="text" placeholder="e.g. Figma" autocomplete="off" required>
+    </div>
+    <div class="field">
+        <label for="subscription-type">type</label>
+        <select id="subscription-type" name="subscription_type" required>{{ type_options(item_types) }}</select>
+    </div>
+    <div class="field">
+        <label for="subscription-price">price</label>
+        <div class="price-input"><span>$</span><input id="subscription-price" name="price" type="number" min="0" max="99999999.99" step="0.01" placeholder="0.00" required></div>
+    </div>
+    <div class="field">
+        <label for="billing-cycle">cycle</label>
+        <select id="billing-cycle" name="billing_cycle"><option value="monthly">monthly</option><option value="yearly">yearly</option></select>
+    </div>
+    <div class="field">
+        <label for="next-billing-date">next billing</label>
+        <input id="next-billing-date" name="next_billing_date" type="date" min="{{ today }}" max="2200-12-31" required>
+    </div>
+    <button class="panel-submit" type="submit">add subscription</button>
+</form>
+{% endif %}
+{% endblock %}

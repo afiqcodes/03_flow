@@ -1,0 +1,87 @@
+{% macro icon(name) -%}
+<svg class="logbook-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    {% if name == 'calendar' %}
+    <rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/>
+    {% elif name == 'note' %}
+    <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6ZM14 3v6h6M8 13h8M8 17h5"/>
+    {% elif name == 'picture' %}
+    <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m3 17 5-5 4 4 4-6 5 7"/>
+    {% elif name == 'home' %}
+    <path d="m3 10 9-7 9 7M5 9v12h5v-7h4v7h5V9"/>
+    {% elif name == 'tag' %}
+    <path d="M20 3h-7L3 13l8 8L21 11V4a1 1 0 0 0-1-1Z"/><circle cx="17" cy="7" r="1"/>
+    {% elif name == 'attachment' %}
+    <path d="m8 13 6-6a3 3 0 0 1 4 4l-8 8a5 5 0 0 1-7-7l9-9a3 3 0 0 1 4 4l-9 9"/>
+    {% elif name == 'download' %}
+    <path d="M12 3v12m-4-4 4 4 4-4M5 16v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4"/>
+    {% elif name == 'edit' %}
+    <path d="m15 4 5 5M4 15l-1 6 6-1L21 8a2 2 0 0 0 0-3l-2-2a2 2 0 0 0-3 0L4 15Z"/>
+    {% elif name == 'close' %}
+    <path d="m6 6 12 12M18 6 6 18"/>
+    {% endif %}
+</svg>
+{%- endmacro %}
+
+<dialog id="logbook-dialog" class="logbook-dialog" aria-labelledby="logbook-dialog-title">
+    <button id="logbook-dialog-close" class="logbook-close" type="button" aria-label="Close daily log" autofocus>{{ icon('close') }}</button>
+    <div class="logbook-dialog-layout">
+        <div class="logbook-dialog-main">
+            <header class="logbook-dialog-header">
+                <p class="logbook-date-line">{{ icon('calendar') }}<time id="logbook-dialog-date"></time></p>
+                <h2 id="logbook-dialog-title">Daily log</h2>
+                <div id="logbook-dialog-meta" class="logbook-dialog-meta" hidden>
+                    <span id="logbook-dialog-type" class="day-type"></span>
+                    <span class="logbook-location-chip">{{ icon('home') }}<span id="logbook-dialog-location"></span></span>
+                </div>
+            </header>
+            <p id="logbook-dialog-status" role="status">Loading log…</p>
+            <div id="logbook-dialog-details" hidden>
+                <section class="logbook-note-section" aria-labelledby="logbook-note-label">
+                    <h3 id="logbook-note-label" class="logbook-section-label">{{ icon('note') }}Note</h3>
+                    <p id="logbook-dialog-description"></p>
+                </section>
+                <section class="logbook-pictures-section" aria-labelledby="logbook-pictures-label">
+                    <h3 id="logbook-pictures-label" class="logbook-section-label">{{ icon('picture') }}Pictures <span id="logbook-picture-count"></span></h3>
+                    <p id="logbook-no-pictures" class="logbook-empty-pictures" hidden>No pictures added for this day.</p>
+                    <div id="logbook-dialog-images" class="logbook-gallery"></div>
+                </section>
+            </div>
+        </div>
+        <aside class="logbook-dialog-sidebar" aria-label="Log details">
+            <section class="logbook-sidebar-section" aria-labelledby="logbook-date-label">
+                <h3 id="logbook-date-label" class="logbook-section-label">{{ icon('calendar') }}Date</h3>
+                <time id="logbook-sidebar-date" class="logbook-date-value"></time>
+            </section>
+            <section id="logbook-sidebar-categories" class="logbook-sidebar-section" aria-labelledby="logbook-categories-label" hidden>
+                <h3 id="logbook-categories-label" class="logbook-section-label">{{ icon('tag') }}Categories</h3>
+                <div class="logbook-sidebar-chips">
+                    <span id="logbook-sidebar-type" class="day-type"></span>
+                    <span class="logbook-location-chip">{{ icon('home') }}<span id="logbook-sidebar-location"></span></span>
+                </div>
+            </section>
+            <section id="logbook-sidebar-attachments" class="logbook-sidebar-section" aria-labelledby="logbook-attachments-label" hidden>
+                <h3 id="logbook-attachments-label" class="logbook-section-label">{{ icon('attachment') }}Attachments</h3>
+                <ul id="logbook-attachment-list" class="logbook-attachment-list"></ul>
+                <p id="logbook-no-attachments" class="logbook-empty-pictures" hidden>No attachments.</p>
+            </section>
+            <a id="logbook-dialog-edit" class="panel-submit logbook-action" hidden>{{ icon('edit') }}<span id="logbook-edit-label">Edit log</span></a>
+        </aside>
+    </div>
+</dialog>
+
+<template id="logbook-picture-template">
+    <figure>
+        <img class="logbook-picture-preview" loading="lazy" alt="">
+        <figcaption>
+            <span class="logbook-file-icon">{{ icon('picture') }}</span>
+            <div class="logbook-file-info"><strong data-filename></strong><small data-file-detail></small></div>
+            <a class="logbook-download">{{ icon('download') }}<span>Download</span></a>
+        </figcaption>
+    </figure>
+</template>
+<template id="logbook-attachment-template">
+    <li>
+        <span class="logbook-file-icon">{{ icon('picture') }}</span>
+        <div class="logbook-file-info"><strong data-filename></strong><small data-file-detail></small></div>
+    </li>
+</template>

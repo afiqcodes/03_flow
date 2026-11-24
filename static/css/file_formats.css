@@ -1,0 +1,235 @@
+.formats-content {
+    padding-top: 30px;
+}
+
+.formats-heading {
+    margin-bottom: 12px;
+}
+
+.formats-heading h1 {
+    font-size: 36px;
+}
+
+.formats-intro,
+.formats-hint,
+.formats-note p {
+    color: var(--theme-secondary, #68686d);
+    font-size: 10px;
+    line-height: 1.7;
+}
+
+.formats-intro {
+    margin: 0 0 24px;
+    max-width: 530px;
+}
+
+.formats-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 24px;
+    margin: 0 0 26px;
+    padding: 0;
+    list-style: none;
+    color: var(--theme-secondary, #68686d);
+    font-size: 9px;
+}
+
+.formats-steps span {
+    margin-right: 5px;
+    color: var(--theme-quiet, #a0a0a5);
+}
+
+.formats-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 2px 4px 12px 2px;
+    scrollbar-width: thin;
+}
+
+.formats-tools {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.formats-tool {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 225px;
+    padding: 18px;
+    border: 1px solid var(--theme-border, #d7d7da);
+    border-radius: 10px;
+    background: var(--theme-surface, #fafafa);
+    color: var(--theme-text, #1d1d1f);
+    text-decoration: none;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.formats-tool:hover,
+.formats-tool:focus-visible,
+.formats-tool.is-selected {
+    border-color: var(--theme-accent, #1d1d1f);
+    background: var(--theme-raised, #fff);
+}
+
+.formats-tool:focus-visible {
+    outline: 2px solid var(--theme-accent, #1d1d1f);
+    outline-offset: 3px;
+}
+
+.formats-tool-number {
+    color: var(--theme-quiet, #a0a0a5);
+    font-size: 9px;
+}
+
+.formats-tool-icon {
+    display: grid;
+    place-items: center;
+    align-self: center;
+    width: 96px;
+    height: 48px;
+    flex: 0 0 auto;
+    margin: 22px 0 16px;
+    color: var(--theme-accent, #1d1d1f);
+}
+
+.formats-tool-icon svg {
+    display: block;
+    width: 96px;
+    height: 48px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.formats-tool-icon text {
+    fill: currentColor;
+    stroke: none;
+    font-family: inherit;
+    font-size: 7px;
+    font-weight: 600;
+    text-anchor: middle;
+}
+
+.formats-tool-icon-arrow {
+    stroke: var(--theme-secondary, #68686d);
+}
+
+.formats-tool h2 {
+    margin: 0 0 10px;
+    font-size: 21px;
+    line-height: 1.2;
+    text-align: center;
+}
+
+.formats-tool p {
+    flex: 1;
+    margin: 0 0 22px;
+    color: var(--theme-secondary, #68686d);
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.formats-tool::after {
+    content: "";
+    border-top: 1px solid var(--theme-border, #d7d7da);
+}
+
+.formats-note {
+    margin-top: 22px;
+    padding: 18px;
+    border: 1px solid var(--theme-border, #d7d7da);
+    border-radius: 9px;
+    background: var(--theme-soft, #f1f1f2);
+}
+
+.formats-note strong {
+    font-size: 11px;
+}
+
+.formats-note p {
+    margin: 8px 0 0;
+}
+
+.formats-file-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.formats-file-list li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--theme-border, #d7d7da);
+}
+
+.formats-file-list span {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.formats-file-list button {
+    padding: 5px 8px;
+    border: 1px solid var(--theme-border, #d7d7da);
+    border-radius: 5px;
+    background: var(--theme-surface, #fafafa);
+    color: var(--theme-text, #1d1d1f);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+#file-conversion-form button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.formats-status,
+.formats-download {
+    color: var(--theme-text, #1d1d1f);
+    font-size: 10px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+}
+
+.formats-status:empty {
+    display: none;
+}
+
+.formats-download {
+    text-underline-offset: 3px;
+}
+
+@media (max-width: 650px) {
+    .formats-tools {
+        grid-template-columns: 1fr;
+    }
+
+    .formats-tool {
+        min-height: 0;
+        padding: 16px;
+    }
+
+    .formats-tool-icon {
+        margin-top: 16px;
+    }
+}
+
+@media (max-width: 600px) {
+    .formats-content {
+        padding: 24px 18px;
+    }
+
+    .formats-heading h1 {
+        font-size: 28px;
+    }
+}

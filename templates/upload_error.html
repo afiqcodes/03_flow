@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Upload too large · flow{% endblock %}
+
+{% block content %}
+<section class="content upload-error-content">
+    <h1>Upload too large</h1>
+    <p class="upload-error-message" role="alert">
+        {% if upload_section == 'Projects' %}
+        The full request must be 55 MB or smaller. Each project file can be up to 20 MB, and the main image up to 5 MB. Your project was not saved.
+        {% else %}
+        Choose up to 10 images, each 5 MB or smaller. Your log was not saved.
+        {% endif %}
+    </p>
+    <a class="upload-error-back" href="{{ url_for('projects') if upload_section == 'Projects' else url_for('logbook') }}">Return to {{ upload_section|default('Logbook') }}</a>
+</section>
+{% endblock %}
+{% block form_title %}Try a smaller upload{% endblock %}
+{% block form_description %}Use your browser's Back button to return to the form, then select smaller files.{% endblock %}

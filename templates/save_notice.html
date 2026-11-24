@@ -1,0 +1,3 @@
+{% if request.args.get('saved') == '1' %}
+<p class="save-notice" role="status" data-auto-dismiss="3000">{{ save_message }}</p>
+{% endif %}

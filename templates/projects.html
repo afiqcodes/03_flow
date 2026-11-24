@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Projects · flow{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/projects.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="content projects-content">
+    <div class="heading projects-heading">
+        <div>
+            <p class="eyebrow">~/docker-learning/plannings/projects</p>
+            <h1>Projects</h1>
+        </div>
+        <span class="item-count">{{ projects|length }} saved</span>
+    </div>
+    {% set save_message = 'Project saved.' %}{% include 'save_notice.html' %}
+    <div class="project-grid">
+        {% for project in projects %}
+        <button type="button" class="project-card" data-dialog-open="project-dialog-{{ project.id }}"
+                aria-haspopup="dialog" aria-controls="project-dialog-{{ project.id }}"
+                aria-label="View {{ project.title }}">
+            <span class="project-card-image">
+                {% if project.has_image %}
+                <img src="{{ url_for('project_image', project_id=project.id) }}" alt="" loading="lazy">
+                {% else %}
+                <span class="project-image-placeholder" aria-hidden="true">▧</span>
+                {% endif %}
+            </span>
+            <span class="project-card-details">
+                <strong>{{ project.title }}</strong>
+                <span class="project-status status-{{ project.status|lower|replace(' ', '-') }}">{{ project.status }}</span>
+            </span>
+        </button>
+        {% else %}
+        <div class="empty-state project-empty">
+            <p>no projects yet.</p>
+            <span>use the input form to add your first project</span>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+{% for project in projects %}
+<dialog id="project-dialog-{{ project.id }}" class="project-dialog" data-dialog aria-labelledby="project-title-{{ project.id }}">
+    <div class="project-dialog-top">
+        <span>project / {{ project.id }}</span>
+        <button type="button" class="project-dialog-close" data-dialog-close aria-label="Close project details">×</button>
+    </div>
+    {% if project.has_image %}
+    <img class="project-dialog-image" src="{{ url_for('project_image', project_id=project.id) }}" alt="Main image for {{ project.title }}">
+    {% endif %}
+    <div class="project-dialog-body">
+        <div class="project-dialog-heading">
+            <h2 id="project-title-{{ project.id }}">{{ project.title }}</h2>
+            <span class="project-status status-{{ project.status|lower|replace(' ', '-') }}">{{ project.status }}</span>
+        </div>
+        <dl class="project-info">
+            <div>
+                <dt>Description</dt>
+                <dd><p class="project-description">{{ project.description }}</p></dd>
+            </div>
+            <div>
+                <dt>GitHub</dt>
+                <dd>{% if project.github_url %}<a href="{{ project.github_url }}" target="_blank" rel="noopener noreferrer">{{ project.github_url }}</a>{% else %}—{% endif %}</dd>
+            </div>
+            <div>
+                <dt>Website</dt>
+                <dd>{% if project.website_url %}<a href="{{ project.website_url }}" target="_blank" rel="noopener noreferrer">{{ project.website_url }}</a>{% else %}—{% endif %}</dd>
+            </div>
+            <div>
+                <dt>Created</dt>
+                <dd><time datetime="{{ project.created_at.isoformat() }}">{{ project.created_at.strftime('%b %d, %Y') }}</time></dd>
+            </div>
+            <div>
+                <dt>Updated</dt>
+                <dd><time datetime="{{ project.updated_at.isoformat() }}">{{ project.updated_at.strftime('%b %d, %Y') }}</time></dd>
+            </div>
+        </dl>
+        <div class="project-files">
+            <h3>Files <span>{{ project.files|length }}</span></h3>
+            {% for file in project.files %}
+            <a href="{{ url_for('project_file', file_id=file.id) }}" download>
+                <span>{{ file.filename }}</span><span>download ↓</span>
+            </a>
+            {% else %}
+            <p>No files attached.</p>
+            {% endfor %}
+        </div>
+        <div class="project-actions">
+            <a class="project-action project-action-primary" href="{{ url_for('projects', edit=project.id) }}">edit</a>
+            {% if project.github_url %}
+            <a class="project-action" href="{{ project.github_url }}" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            {% endif %}
+            {% if project.website_url %}
+            <a class="project-action" href="{{ project.website_url }}" target="_blank" rel="noopener noreferrer">website ↗</a>
+            {% endif %}
+        </div>
+    </div>
+</dialog>
+{% endfor %}
+{% endblock %}
+
+{% block status_label %}project-library{% endblock %}
+{% block form_eyebrow %}projects / {{ 'edit' if form_values.id else 'new' }}{% endblock %}
+{% block form_title %}{{ 'Edit project' if form_values.id else 'Add a project' }}{% endblock %}
+{% block form_description %}Keep your work, links, and files together.{% endblock %}
+{% block form_panel %}
+{% if error %}<p class="project-error" role="alert">{{ error }} Re-select any new files before saving.</p>{% endif %}
+<form class="panel-form" action="{{ url_for('save_project') }}" method="POST" enctype="multipart/form-data">
+    {% if form_values.id %}<input type="hidden" name="id" value="{{ form_values.id }}">{% endif %}
+    <div class="field">
+        <label for="project-title">title</label>
+        <input id="project-title" name="title" type="text" maxlength="200" value="{{ form_values.title|default('') }}" placeholder="Project name" required>
+    </div>
+    <div class="field">
+        <label for="project-description">description</label>
+        <textarea id="project-description" name="description" rows="5" maxlength="20000" placeholder="What is this project about?" required>{{ form_values.description|default('') }}</textarea>
+    </div>
+    <div class="field">
+        <label for="project-status">status</label>
+        <select id="project-status" name="status" required>
+            {% for status in status_options %}
+            <option value="{{ status }}" {% if form_values.status == status %}selected{% endif %}>{{ status }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field">
+        <label for="project-github">GitHub link <span>(optional)</span></label>
+        <input id="project-github" name="github_url" type="text" maxlength="2000" value="{{ form_values.github_url|default('', true) }}" placeholder="https://github.com/..." inputmode="url">
+    </div>
+    <div class="field">
+        <label for="project-website">website link <span>(optional)</span></label>
+        <input id="project-website" name="website_url" type="text" maxlength="2000" value="{{ form_values.website_url|default('', true) }}" placeholder="https://example.com" inputmode="url">
+    </div>
+    {% if form_values.has_image %}
+    <div class="project-saved-image">
+        <img src="{{ url_for('project_image', project_id=form_values.id) }}" alt="Current main image">
+        <label><input type="checkbox" name="remove_image" value="1" {% if request.form.get('remove_image') == '1' %}checked{% endif %}> Remove current image</label>
+    </div>
+    {% endif %}
+    <div class="field">
+        <label for="project-image">{{ 'replace main image' if form_values.has_image else 'main image' }} <span>(optional)</span></label>
+        <input id="project-image" name="main_image" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+        <small class="project-help">JPEG, PNG, GIF, or WebP · up to {{ max_image_bytes // (1024 * 1024) }} MB</small>
+    </div>
+    {% if existing_files %}
+    <fieldset class="project-saved-files">
+        <legend>saved files</legend>
+        {% for file in existing_files %}
+        <label><input type="checkbox" name="remove_files" value="{{ file.id }}" {% if file.id|string in request.form.getlist('remove_files') %}checked{% endif %}> Remove {{ file.filename }}</label>
+        {% endfor %}
+    </fieldset>
+    {% endif %}
+    <div class="field">
+        <label for="project-documents">{{ 'add files' if form_values.id else 'documents & source files' }} <span>(optional)</span></label>
+        <input id="project-documents" name="documents" type="file" multiple>
+        <small class="project-help">ZIP, PDF, DOC, PNG, and other files · up to {{ max_project_files }} files · {{ max_project_file_bytes // (1024 * 1024) }} MB each</small>
+    </div>
+    <button class="panel-submit" type="submit">{{ 'save changes' if form_values.id else 'save project' }}</button>
+    {% if form_values.id %}<a class="project-cancel" href="{{ url_for('projects') }}">cancel editing</a>{% endif %}
+</form>
+{% endblock %}
+

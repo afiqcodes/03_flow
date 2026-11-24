@@ -1,0 +1,82 @@
+{% extends "workspace.html" %}
+
+{% block title %}Home Dashboard · flow{% endblock %}
+
+{% block content %}
+<section class="content workspace-content">
+    <div class="heading workspace-heading">
+        <div><p class="eyebrow">~/flow/home</p><h1>Home Dashboard</h1><p class="workspace-subtitle">{{ today.strftime('%A, %d %B %Y') }}</p></div>
+    </div>
+    <div class="workspace-scroll">
+        <div class="stats-grid">
+            <a class="stat-card stat-link" href="{{ url_for('index') }}"><span>open tasks</span><strong>{{ stats.open_tasks }}</strong><small>{{ stats.overdue_tasks }} overdue before today</small></a>
+            <a class="stat-card stat-link" href="{{ url_for('expenses') }}"><span>spent this month</span><strong>${{ '%.2f'|format(finances.spending) }}</strong><small>{{ today.strftime('%B') }} transactions</small></a>
+            <a class="stat-card stat-link" href="{{ url_for('projects') }}"><span>active projects</span><strong>{{ stats.active_projects }}</strong><small>ongoing or in review</small></a>
+        </div>
+
+        <div class="dashboard-grid">
+            <section class="workspace-card">
+                <div class="workspace-card-heading"><h2>On your list</h2><a href="{{ url_for('index') }}">all tasks ↗</a></div>
+                <p class="workspace-hint">Open tasks due today or earlier · up to 6 shown</p>
+                <ul class="activity-list">
+                    {% for task in due_tasks %}
+                    <li><a href="{{ url_for('index', edit=task.id) }}"><strong>{{ task.title }}</strong><small>{{ task.due_at.strftime('%d %b, %H:%M') }} · {{ task.priority }}</small></a></li>
+                    {% else %}<li class="workspace-empty">Nothing due today. A little room to breathe.</li>{% endfor %}
+                </ul>
+            </section>
+            <section class="workspace-card">
+                <div class="workspace-card-heading"><h2>Upcoming bills</h2><a href="{{ url_for('subscriptions') }}">all bills ↗</a></div>
+                <p class="workspace-hint">Active subscriptions in the next 30 days · up to 5 shown</p>
+                <ul class="activity-list">
+                    {% for bill in bills %}
+                    <li><div><strong>{{ bill.name }}</strong><small>{{ bill.next_billing_date.strftime('%d %b') }}</small></div><span class="activity-amount">${{ '%.2f'|format(bill.price) }}</span></li>
+                    {% else %}<li class="workspace-empty">No upcoming subscription bills.</li>{% endfor %}
+                </ul>
+            </section>
+            <section class="workspace-card">
+                <div class="workspace-card-heading"><h2>Recent logs</h2><a href="{{ url_for('logbook') }}">logbook ↗</a></div>
+                <ul class="activity-list">
+                    {% for entry in recent_logs %}
+                    <li><a href="{{ url_for('logbook', edit=entry.id) }}"><strong>{{ entry.title }}</strong><small>{{ entry.entry_date.strftime('%d %b %Y') }} · {{ entry.day_type }}</small></a></li>
+                    {% else %}<li class="workspace-empty">Your next memory starts with a log.</li>{% endfor %}
+                </ul>
+            </section>
+            <section class="workspace-card">
+                <div class="workspace-card-heading"><h2>Your notes</h2><a href="{{ url_for('notes') }}">{{ stats.note_count }} notes ↗</a></div>
+                <ul class="activity-list">
+                    {% for note in recent_notes %}
+                    <li><a href="{{ url_for('notes', edit=note.id) }}"><strong>{{ note.title }}</strong><small>{% if note.pinned %}Pinned · {% endif %}{{ note.updated_at.strftime('%d %b %Y') }}</small></a></li>
+                    {% else %}<li class="workspace-empty">Keep an idea close. Write your first note.</li>{% endfor %}
+                </ul>
+            </section>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block status_label %}home-dashboard{% endblock %}
+{% block form_eyebrow %}your workspace / today{% endblock %}
+{% block form_title %}Make room for your day{% endblock %}
+{% block form_description %}Capture something now, then get back to what matters.{% endblock %}
+{% block form_panel %}
+<nav class="quick-actions" aria-label="Quick actions">
+    <a href="{{ url_for('index', _anchor='task-form') }}"><span>Add a task</span><span aria-hidden="true">↗</span></a>
+    <a href="{{ url_for('expenses', _anchor='transaction-form') }}"><span>Record a transaction</span><span aria-hidden="true">↗</span></a>
+    <a href="{{ url_for('notes', _anchor='note-form') }}"><span>Write a note</span><span aria-hidden="true">↗</span></a>
+    <a href="{{ url_for('logbook', date=today.isoformat(), _anchor='logbook-form') }}"><span>Log today</span><span aria-hidden="true">↗</span></a>
+</nav>
+<section class="workspace-card dashboard-finances">
+    <div class="workspace-card-heading"><h2>{{ today.strftime('%B') }} money</h2><a href="{{ url_for('expenses') }}">tracker ↗</a></div>
+    <dl class="finance-summary">
+        <div><dt>Recorded income</dt><dd>${{ '%.2f'|format(finances.income) }}</dd></div>
+        <div><dt>Recorded expenses</dt><dd>${{ '%.2f'|format(finances.spending) }}</dd></div>
+        <div><dt>Net cash flow</dt><dd class="{% if finances.balance < 0 %}negative{% endif %}">${{ '%.2f'|format(finances.balance) }}</dd></div>
+        {% if finances.budget %}
+        <div><dt>Expense budget</dt><dd>${{ '%.2f'|format(finances.planned_expenses) }}</dd></div>
+        <div><dt>Expense budget left</dt><dd class="{% if finances.budget_left < 0 %}negative{% endif %}">${{ '%.2f'|format(finances.budget_left) }}</dd></div>
+        {% endif %}
+    </dl>
+    {% if not finances.budget %}<p class="workspace-hint">No budget set for this month. <a href="{{ url_for('budgets') }}">Plan your budget ↗</a></p>{% endif %}
+    <p class="workspace-hint">Totals use recorded transactions. Subscription bills are added to spending when you record them.</p>
+</section>
+{% endblock %}

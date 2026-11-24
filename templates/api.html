@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}API · flow{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/api.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="content api-content">
+    <div class="heading api-heading">
+        <div>
+            <p class="eyebrow">~/flow/information/api</p>
+            <h1>API</h1>
+        </div>
+        <span class="item-count">{{ services|length }} services</span>
+    </div>
+    <p class="api-intro">Explore a service, set its request values, and inspect the response.</p>
+    <div class="api-grid">
+        {% for service in services %}
+        <article class="api-card">
+            <div class="api-card-top">
+                <span class="api-card-index">{{ '%02d'|format(loop.index) }}</span>
+                <span class="api-card-method">{{ service.method }}</span>
+            </div>
+            <div class="api-card-copy">
+                <h2>{{ service.name }}</h2>
+                <strong>{{ service.purpose }}</strong>
+                <p>{{ service.description }}</p>
+            </div>
+            <button class="api-card-button" type="button" data-dialog-open="api-dialog-{{ service.slug }}"
+                    aria-haspopup="dialog" aria-controls="api-dialog-{{ service.slug }}">
+                Open API <span aria-hidden="true">↗</span>
+            </button>
+        </article>
+        {% endfor %}
+    </div>
+</section>
+
+{% for service in services %}
+<dialog id="api-dialog-{{ service.slug }}" class="api-dialog" data-dialog aria-labelledby="api-title-{{ service.slug }}">
+    <div class="api-dialog-top">
+        <span>information / {{ service.name }}</span>
+        <button type="button" class="api-dialog-close" data-dialog-close aria-label="Close {{ service.name }}">×</button>
+    </div>
+    <div class="api-dialog-body">
+        <div class="api-dialog-heading">
+            <div>
+                <p class="eyebrow">{{ service.purpose }}</p>
+                <h2 id="api-title-{{ service.slug }}">{{ service.name }}</h2>
+                <p>{{ service.description }}</p>
+            </div>
+            <span class="api-sample-badge">{{ 'Live' if service.slug in live_slugs else 'Sample' }}</span>
+        </div>
+        <dl class="api-metadata">
+            <div><dt>Version</dt><dd>{{ service.version }}</dd></div>
+            <div><dt>Auth</dt><dd>{{ service.auth }}</dd></div>
+            <div><dt>Latency</dt><dd>{{ service.latency }}</dd></div>
+            <div><dt>Method</dt><dd>{{ service.method }}</dd></div>
+        </dl>
+        <div class="api-workbench">
+            <section class="api-request-panel" aria-labelledby="api-request-title-{{ service.slug }}">
+                <div class="api-panel-heading">
+                    <h3 id="api-request-title-{{ service.slug }}">Request</h3>
+                    <span>Set the values below</span>
+                </div>
+                <form class="api-request-form" action="{{ url_for('request_api_service', slug=service.slug) }}" method="post">
+                    {% for field in service.fields %}
+                    <div class="field">
+                        <label for="{{ service.slug }}-{{ field.name }}">{{ field.label }}</label>
+                        {% if field.type == 'select' %}
+                        <select id="{{ service.slug }}-{{ field.name }}" name="{{ field.name }}" required
+                                aria-describedby="{{ service.slug }}-{{ field.name }}-help">
+                            {% for option in field.options %}
+                            <option value="{{ option }}" {% if option == field.example %}selected{% endif %}>{{ option }}</option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <input id="{{ service.slug }}-{{ field.name }}" name="{{ field.name }}"
+                               type="{{ field.type }}" value="{{ field.example }}" maxlength="200" required
+                               aria-describedby="{{ service.slug }}-{{ field.name }}-help">
+                        {% endif %}
+                        <small id="{{ service.slug }}-{{ field.name }}-help">{{ field.help }}</small>
+                    </div>
+                    {% endfor %}
+                    <button class="api-send-button" type="submit">Send request <span aria-hidden="true">→</span></button>
+                </form>
+            </section>
+            <section class="api-response-panel" aria-labelledby="api-response-title-{{ service.slug }}">
+                <div class="api-panel-heading">
+                    <h3 id="api-response-title-{{ service.slug }}">Response</h3>
+                    <span data-api-latency>Example</span>
+                </div>
+                <div class="api-response-meta" aria-live="polite">
+                    <span class="api-response-status is-example" data-api-status>Example</span>
+                    <span data-api-message>Sample JSON response</span>
+                </div>
+                <pre class="api-response-json" data-api-response>{{ service.example_response|tojson(indent=2) }}</pre>
+            </section>
+        </div>
+    </div>
+</dialog>
+{% endfor %}
+{% endblock %}
+
+{% block status_label %}api-directory{% endblock %}
+{% block form_eyebrow %}information / api{% endblock %}
+{% block form_title %}API workspace{% endblock %}
+{% block form_description %}Open any card to try its request and inspect the response.{% endblock %}
+{% block form_panel %}
+<div class="api-sidebar">
+    <div class="api-sidebar-stat"><strong>{{ services|length }}</strong><span>service slots ready to configure</span></div>
+    <p>Each service has its own request fields and example response. Connected services call their API; the remaining slots use local sample data.</p>
+    <div class="api-sidebar-note">
+        <strong>Try a request</strong>
+        <p>Open a card and send the prefilled values for a <code>200</code> response. Change a lookup value to see a <code>404</code>.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+{% endblock %}

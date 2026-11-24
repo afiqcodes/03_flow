@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}FILE FORMATs · flow{% endblock %}
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/file_formats.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="content formats-content">
+    <div class="heading formats-heading">
+        <div><p class="eyebrow">~/flow/information/file-formats</p><h1>FILE FORMATs</h1></div>
+        <span class="item-count">3 tools</span>
+    </div>
+    <p class="formats-intro">A new format for the same file. Choose a tool, upload your files, and download the result.</p>
+    <ol class="formats-steps" aria-label="Conversion steps">
+        <li><span>01</span> Choose a tool</li>
+        <li><span>02</span> Upload files</li>
+        <li><span>03</span> Convert & download</li>
+    </ol>
+    <div class="formats-scroll">
+        <div class="formats-tools">
+            {% for slug, tool in tools.items() %}
+            <a class="formats-tool {% if selected_tool == slug %}is-selected{% endif %}" href="{{ url_for('file_formats', tool=slug) }}" {% if selected_tool == slug %}aria-current="true"{% endif %}>
+                <span class="formats-tool-number">{{ '%02d'|format(loop.index) }}</span>
+                <span class="formats-tool-icon" aria-hidden="true">
+                    <svg viewBox="0 0 96 48" focusable="false">
+                        {% if slug == 'images-to-pdf' %}
+                        <rect x="3" y="9" width="27" height="28" rx="3"/>
+                        <path d="M9 9V5h27v28h-6M3 29l8-9 7 7 5-5 7 8"/>
+                        <circle cx="22" cy="17" r="2.5"/>
+                        {% elif slug == 'pdf-to-images' %}
+                        <path d="M8 5h16l9 9v29H8ZM24 5v9h9"/>
+                        <text x="20.5" y="31">PDF</text>
+                        {% else %}
+                        <path d="M8 5h16l9 9v29H8ZM24 5v9h9M14 21h13M14 27h13M14 33h8"/>
+                        {% endif %}
+                        <path class="formats-tool-icon-arrow" d="M42 24h13m-5-5 5 5-5 5"/>
+                        {% if slug == 'pdf-to-images' %}
+                        <rect x="63" y="13" width="27" height="28" rx="3"/>
+                        <path d="M69 13V9h24v28h-3M63 33l8-9 7 7 5-5 7 8"/>
+                        <circle cx="82" cy="21" r="2.5"/>
+                        {% else %}
+                        <path d="M66 5h16l9 9v29H66ZM82 5v9h9"/>
+                        <text x="78.5" y="31">PDF</text>
+                        {% endif %}
+                    </svg>
+                </span>
+                <h2>{{ tool.title }}</h2>
+                <p>{{ tool.description }}</p>
+            </a>
+            {% endfor %}
+        </div>
+        <div class="formats-note">
+            <strong>Convert, download, carry on.</strong>
+            <p>Files are processed for this conversion and are not added to your saved records. Office documents may have layout differences in the PDF.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block status_label %}file-formats{% endblock %}
+{% block form_eyebrow %}files / convert{% endblock %}
+{% block form_title %}{{ selected.title }}{% endblock %}
+{% block form_description %}{{ selected.description }}{% endblock %}
+{% block form_panel %}
+<p class="upload-error-message" role="alert" data-conversion-error {% if not error %}hidden{% endif %}>{{ error or '' }}</p>
+<form id="file-conversion-form" class="panel-form" data-download-form action="{{ url_for('convert_file_format') }}" method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="conversion" value="{{ selected_tool }}">
+    <div class="field">
+        <label for="conversion-files">{{ 'images' if selected_tool == 'images-to-pdf' else 'file' }}</label>
+        <input id="conversion-files" name="files" type="file" accept="{{ selected.accept }}" {% if selected_tool == 'images-to-pdf' %}multiple{% endif %} aria-describedby="conversion-file-help" required>
+        <small id="conversion-file-help" class="formats-hint">
+            {% if selected_tool == 'images-to-pdf' %}JPG / PNG · up to 20 images · 5 MB and 20 megapixels each · 40 megapixels combined. Pages follow the order below.
+            {% elif selected_tool == 'pdf-to-images' %}PDF · up to 20 MB · export up to 50 pages per conversion. Password-protected PDFs must be unlocked first.
+            {% else %}DOCX / XLSX / PPTX / ODT · one file, up to 20 MB. Password-protected documents must be unlocked first.{% endif %}
+        </small>
+    </div>
+    {% if selected_tool == 'images-to-pdf' %}
+    <ol class="formats-file-list" data-conversion-files aria-label="PDF page order"></ol>
+    <p class="formats-hint">Transparent areas become white. Image orientation is preserved.</p>
+    {% elif selected_tool == 'pdf-to-images' %}
+    <div class="panel-field-row">
+        <div class="field"><label for="conversion-image-format">image format</label><select id="conversion-image-format" name="image_format"><option value="png">PNG · lossless</option><option value="jpg">JPG · smaller files</option></select></div>
+        <div class="field"><label for="conversion-dpi">resolution</label><select id="conversion-dpi" name="dpi">{% for dpi in dpi_values %}<option value="{{ dpi }}" {% if dpi == 150 %}selected{% endif %}>{{ dpi }} DPI</option>{% endfor %}</select></div>
+    </div>
+    <div class="panel-field-row">
+        <div class="field"><label for="conversion-first-page">first page</label><input id="conversion-first-page" name="first_page" type="number" min="1" step="1" value="1" required></div>
+        <div class="field"><label for="conversion-last-page">last page (optional)</label><input id="conversion-last-page" name="last_page" type="number" min="1" step="1" placeholder="Last page"></div>
+    </div>
+    <p class="formats-hint">The ZIP contains one image per page. Lower DPI produces smaller files; higher DPI gives more detail.</p>
+    {% endif %}
+    <button class="panel-submit" type="submit">convert & download</button>
+    <p class="formats-status" role="status" aria-live="polite" data-conversion-status></p>
+    <a class="formats-download" data-conversion-download hidden>download again ↗</a>
+</form>
+<noscript><p class="formats-hint">Your converted file will download after submitting. Images use the original selection order.</p></noscript>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='js/file_formats.js') }}"></script>
+{% endblock %}

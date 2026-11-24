@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}flow{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='wolf-logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/components.css') }}">
+    {% block page_styles %}{% endblock %}
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</head>
+<body>
+    <div class="app-shell">
+    <main class="window content-window">
+        <header class="titlebar">
+            <div class="traffic-lights" aria-hidden="true">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+
+            <button id="nav-toggle" class="app-logo" type="button" aria-label="Open navigation" aria-controls="side-nav" aria-expanded="false">
+                <span class="logo-frame">
+                    <img class="logo-mark" src="{{ url_for('static', filename='wolf-logo.png') }}" alt="" aria-hidden="true">
+                </span>
+                <span>flow</span>
+            </button>
+
+            <div class="titlebar-shortcuts">
+                <a class="calendar-shortcut {% if active_page == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}" aria-label="Open home dashboard" title="Home dashboard" {% if active_page == 'dashboard' %}aria-current="page"{% endif %}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8"/></svg>
+                </a>
+                <a class="calendar-shortcut {% if active_page == 'calendar' %}active{% endif %}" href="{{ url_for('calendar_page') }}" aria-label="Open calendar" title="Calendar" {% if active_page == 'calendar' %}aria-current="page"{% endif %}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3M14 14h3M8 18h3"/></svg>
+                </a>
+            </div>
+        </header>
+
+        <div id="nav-scrim" class="nav-scrim" aria-hidden="true"></div>
+        <aside id="side-nav" class="side-nav" aria-label="Main navigation" aria-hidden="true" inert>
+            <div class="side-nav-header">
+                <span class="logo-frame">
+                    <img class="logo-mark" src="{{ url_for('static', filename='wolf-logo.png') }}" alt="" aria-hidden="true">
+                </span>
+                <div><strong>flow</strong><span>workspace</span></div>
+            </div>
+
+            <nav class="nav-links">
+                <div class="nav-group">
+                    <p class="nav-group-label">Personal</p>
+                    <a href="{{ url_for('index') }}" class="{% if active_page == 'tasks' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>
+                        <span>TASKs</span>
+                    </a>
+                    <a href="{{ url_for('notes') }}" class="{% if active_page == 'notes' %}active{% endif %}" {% if active_page == 'notes' %}aria-current="page"{% endif %}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8ZM14 3v5h5M8 12h8M8 16h6"/></svg>
+                        <span>NOTEs</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <p class="nav-group-label">Planning</p>
+                    <a href="{{ url_for('logbook') }}" class="{% if active_page == 'logbook' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h13a3 3 0 0 1 3 3v15H7a3 3 0 0 1-3-3V3Zm0 14h16M8 7h8M8 11h6"/></svg>
+                        <span>LOGBOOK</span>
+                    </a>
+                    <a href="{{ url_for('projects') }}" class="{% if active_page == 'projects' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 5V3h8v2"/></svg>
+                        <span>PROJECTs</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <p class="nav-group-label">Finance</p>
+                    <a href="{{ url_for('budgets') }}" class="{% if active_page == 'budgets' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18M7 14h3M14 14h3M7 18h3"/></svg>
+                        <span>BUDGETs</span>
+                    </a>
+                    <a href="{{ url_for('expenses') }}" class="{% if active_page == 'expenses' %}active{% endif %}" {% if active_page == 'expenses' %}aria-current="page"{% endif %}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18l-3-2-4 2-4-2-3 2ZM8 7h8M8 11h8M8 15h4"/></svg>
+                        <span>EXPENSEs</span>
+                    </a>
+                    <a href="{{ url_for('subscriptions') }}" class="{% if active_page == 'subscriptions' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+                        <span>SUBSCRIPTIONs</span>
+                    </a>
+                </div>
+
+                <div class="nav-group">
+                    <p class="nav-group-label">Information</p>
+                    <a href="{{ url_for('bookmarks') }}" class="{% if active_page == 'bookmarks' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4.5A2.5 2.5 0 0 1 8.5 2h7A2.5 2.5 0 0 1 18 4.5V22l-6-4-6 4V4.5Z"/></svg>
+                        <span>BOOKMARKs</span>
+                    </a>
+                    <a href="{{ url_for('api_page') }}" class="{% if active_page == 'api' %}active{% endif %}">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16"/></svg>
+                        <span>API</span>
+                    </a>
+                    <a href="{{ url_for('file_formats') }}" class="{% if active_page == 'file_formats' %}active{% endif %}" {% if active_page == 'file_formats' %}aria-current="page"{% endif %}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H5v18h14V8ZM14 3v5h5M8 12h8m-3-3 3 3-3 3M11 15H8m3 3-3-3 3-3"/></svg>
+                        <span>FILE FORMATs</span>
+                    </a>
+                </div>
+            </nav>
+
+            <p class="nav-hint">click the logo to close</p>
+        </aside>
+
+        {% block content %}{% endblock %}
+
+        <footer class="statusbar">
+            <span>{% block status_label %}flow{% endblock %}</span>
+            <span class="status">● running</span>
+        </footer>
+    </main>
+
+    <aside class="form-window" aria-label="Input form">
+        <header class="form-titlebar">
+            <div class="traffic-lights" aria-hidden="true">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+            </div>
+            <p>flow / form</p>
+            <div class="title-spacer"></div>
+        </header>
+
+        <section class="form-window-content">
+            <div class="form-window-heading">
+                <p class="eyebrow">{% block form_eyebrow %}new entry{% endblock %}</p>
+                <h2>{% block form_title %}Add item{% endblock %}</h2>
+                <p class="form-description">{% block form_description %}Enter the details below.{% endblock %}</p>
+            </div>
+            {% block form_panel %}{% endblock %}
+        </section>
+
+        <footer class="statusbar form-statusbar">
+            <span>input-panel</span>
+            <span class="status">● ready</span>
+        </footer>
+    </aside>
+    </div>
+
+    <div class="theme-mode-control">
+        <button id="theme-switch" class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Dark mode" title="Switch to dark mode">
+            <span class="theme-switch-thumb" aria-hidden="true"></span>
+            <span class="theme-switch-icon theme-switch-sun" aria-hidden="true">
+                <img src="{{ url_for('static', filename='images/sun.png') }}" alt="">
+            </span>
+            <span class="theme-switch-icon theme-switch-moon" aria-hidden="true">
+                <img src="{{ url_for('static', filename='images/moon.png') }}" alt="">
+            </span>
+        </button>
+    </div>
+
+    <div class="background-color-control">
+        <button id="background-color-button" class="background-color-button" type="button" aria-label="Change application background color" title="Change background color">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18h1.5a1.8 1.8 0 0 0 .4-3.5 1.5 1.5 0 0 1 .3-2.9H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3Z"/><circle cx="7.5" cy="10" r="1"/><circle cx="10" cy="6.5" r="1"/><circle cx="15" cy="7" r="1"/><circle cx="17" cy="11" r="1"/></svg>
+        </button>
+        <input id="background-color-input" class="background-color-input" type="color" value="#e9e9ec" aria-label="Application background color">
+    </div>
+
+    <dialog id="delete-dialog" class="delete-dialog">
+        <div class="dialog-content">
+            <div class="dialog-icon">!</div>
+            <div class="dialog-text">
+                <h2>Delete <span id="delete-item-type">item</span>?</h2>
+                <p>This action cannot be undone.</p>
+            </div>
+            <div class="dialog-actions">
+                <button id="cancel-delete" class="dialog-button cancel" type="button">cancel</button>
+                <button id="confirm-delete" class="dialog-button delete" type="button">delete</button>
+            </div>
+        </div>
+    </dialog>
+
+    {% block page_scripts %}{% endblock %}
+</body>
+</html>

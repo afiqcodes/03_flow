@@ -1,0 +1,218 @@
+/* Budgets styles. Keep responsive overrides in this file. */
+
+.budget-content {
+    padding-top: 30px;
+}
+
+/* Budget form and balance preview */
+
+.expense-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 9px;
+    padding: 14px 12px 12px;
+    border: 1px solid var(--theme-border, #dedee2);
+    border-radius: 8px;
+}
+
+.expense-fields legend {
+    padding: 0 6px;
+    color: var(--theme-secondary, #77777c);
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.remaining-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 13px;
+    border: 1px solid #d8e5da;
+    border-radius: 8px;
+    background: #f2f8f3;
+}
+
+.remaining-preview span {
+    color: #66756a;
+    font-size: 9px;
+}
+
+.remaining-preview strong {
+    color: #21843a;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.remaining-preview.negative {
+    border-color: #edcfcc;
+    background: #fff2f1;
+}
+
+.remaining-preview.negative strong {
+    color: #c43e35;
+}
+
+.budget-stats {
+    margin-bottom: 16px;
+}
+
+/* Monthly cards */
+
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 12px;
+}
+
+.month-card {
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid var(--theme-border, #e5e5e7);
+    border-radius: 7px;
+    background: var(--theme-raised, #fff);
+}
+
+.month-card.planned {
+    border-color: var(--theme-border, #d5d5d9);
+}
+
+.month-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 16px;
+    margin-bottom: 7px;
+}
+
+.month-card-header > span {
+    color: var(--theme-secondary, #8f8f94);
+    font-size: 8px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.month-card-header form {
+    margin: 0;
+}
+
+.month-reset {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--theme-quiet, #aaaab0);
+    font: inherit;
+    font-size: 12px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+}
+
+.month-card:hover .month-reset,
+.month-reset:focus-visible {
+    opacity: 1;
+}
+
+.month-reset:hover {
+    background: #fff0ef;
+    color: #d53a31;
+}
+
+.month-card > strong {
+    display: block;
+    overflow: hidden;
+    margin-bottom: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+}
+
+.month-card > strong.not-set {
+    color: var(--theme-quiet, #b0b0b5);
+}
+
+.month-card > small,
+.month-not-set {
+    color: var(--theme-quiet, #aaaab0);
+    font-size: 8px;
+}
+
+.month-finances {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px 8px;
+}
+
+.month-finances > div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.month-finances span {
+    overflow: hidden;
+    color: var(--theme-quiet, #a0a0a5);
+    font-size: 7px;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.month-finances strong {
+    overflow: hidden;
+    font-size: 9px;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.month-finances p {
+    grid-column: 1 / -1;
+    margin: 2px 0 -1px;
+    padding-top: 6px;
+    border-top: 1px solid var(--theme-border, #ededee);
+    color: var(--theme-secondary, #8f8f94);
+    font-size: 7px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.month-finances .month-remaining {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 2px;
+    padding-top: 7px;
+    border-top: 1px solid var(--theme-border, #ededee);
+}
+
+.month-finances .month-remaining strong {
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* Responsive layout */
+
+@media (max-width: 600px) {
+    .budget-content {
+        padding: 23px 16px;
+    }
+
+    .month-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .month-reset {
+        opacity: 1;
+    }
+}

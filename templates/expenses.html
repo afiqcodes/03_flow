@@ -1,0 +1,86 @@
+{% extends "workspace.html" %}
+
+{% block title %}Expense Tracker · flow{% endblock %}
+
+{% block content %}
+<section class="content workspace-content">
+    <div class="heading workspace-heading"><div><p class="eyebrow">~/flow/expenses</p><h1>Expense Tracker</h1><p class="workspace-subtitle">{{ month_label }} · actual income and spending</p></div></div>
+    {% set save_message = 'Transaction saved.' %}{% include 'save_notice.html' %}
+    <form class="workspace-filters" action="{{ url_for('expenses') }}" method="GET">
+        {% if subscription %}<input type="hidden" name="subscription" value="{{ subscription.id }}">{% endif %}
+        <div class="field"><label for="expense-month">month</label><input id="expense-month" name="month" type="month" min="2000-01" max="2200-12" value="{{ selected_month }}" required></div>
+        <button class="workspace-button" type="submit">view month</button>
+        <a class="workspace-link" href="{{ url_for('expenses', subscription=subscription.id if subscription else none) }}">this month</a>
+    </form>
+    {% if subscription %}<p class="workspace-hint">Payment history for <a href="{{ url_for('subscriptions', _anchor='subscription-' ~ subscription.id) }}">{{ subscription.name }}</a> in {{ month_label }}. Monthly totals include all transactions. <a href="{{ url_for('expenses', month=selected_month) }}">Show all transactions</a></p>{% endif %}
+    <div class="workspace-scroll">
+        <div class="stats-grid">
+            <article class="stat-card"><span>income</span><strong>${{ '%.2f'|format(finances.income) }}</strong><small>recorded this month</small></article>
+            <article class="stat-card"><span>expenses</span><strong>${{ '%.2f'|format(finances.spending) }}</strong><small>recorded this month</small></article>
+            <article class="stat-card"><span>net cash flow</span><strong class="{% if finances.balance < 0 %}negative{% endif %}">${{ '%.2f'|format(finances.balance) }}</strong><small>income minus expenses</small></article>
+        </div>
+        <section class="workspace-card">
+            <div class="workspace-card-heading"><h2>Budget & actual spending</h2><a href="{{ url_for('budgets') }}">budgets ↗</a></div>
+            {% if finances.budget %}
+            <p class="workspace-hint">Expense budget: ${{ '%.2f'|format(finances.planned_expenses) }} · <span class="{% if finances.budget_left < 0 %}negative{% endif %}">${{ '%.2f'|format(finances.budget_left) }} left</span>. Others has no allocated budget.</p>
+            {% else %}<p class="workspace-hint">No budget set for {{ month_label }}. <a href="{{ url_for('budgets') }}">Set a monthly budget</a> to compare planned and actual spending.</p>{% endif %}
+            <div class="workspace-table-wrap">
+                <table class="workspace-table budget-comparison" aria-label="Monthly spending by category">
+                    <thead><tr><th scope="col">Category</th><th scope="col">Planned</th><th scope="col">Spent</th></tr></thead>
+                    <tbody>{% for category in finances.categories %}<tr><th scope="row">{{ category.name|title }}</th><td>{% if category.planned is not none %}${{ '%.2f'|format(category.planned) }}{% else %}—{% endif %}</td><td class="{% if category.planned is not none and category.spent > category.planned %}negative{% endif %}">${{ '%.2f'|format(category.spent) }}</td></tr>{% endfor %}</tbody>
+                </table>
+            </div>
+        </section>
+        <section class="workspace-card transaction-section">
+            <div class="workspace-card-heading"><h2>{{ 'Subscription payments' if subscription else 'Transactions' }}</h2><span class="workspace-tag">{{ transactions|length }} recorded</span></div>
+            {% if transactions %}
+            <div class="workspace-table-wrap">
+                <table class="workspace-table transaction-table" aria-label="Transactions for {{ month_label }}">
+                    <thead><tr><th scope="col">Date</th><th scope="col">Transaction</th><th scope="col">Amount</th><th scope="col">Actions</th></tr></thead>
+                    <tbody>{% for transaction in transactions %}
+                    <tr class="transaction-row">
+                        <td><time datetime="{{ transaction.occurred_on.isoformat() }}">{{ transaction.occurred_on.strftime('%d %b') }}</time></td>
+                        <td><strong class="transaction-title">{{ transaction.title }}</strong><small>{{ transaction.kind|title }} · {{ transaction.category|title }}</small>{% if transaction.subscription_id %}<small>Subscription: <a href="{{ url_for('subscriptions', _anchor='subscription-' ~ transaction.subscription_id) }}">{{ transaction.subscription_name }}</a></small>{% elif transaction.subscription_due_on %}<small>Subscription payment · plan removed</small>{% endif %}{% if transaction.description %}<p class="transaction-description">{{ transaction.description }}</p>{% endif %}</td>
+                        <td class="transaction-amount {% if transaction.kind == 'income' %}positive{% endif %}">{{ '+' if transaction.kind == 'income' else '−' }}${{ '%.2f'|format(transaction.amount) }}</td>
+                        <td><div class="record-actions"><a href="{{ url_for('expenses', month=selected_month, subscription=subscription.id if subscription else none, edit=transaction.id, _anchor='transaction-form') }}">edit</a><form class="delete-form" action="{{ url_for('delete_transaction', transaction_id=transaction.id, month=selected_month, subscription=subscription.id if subscription else none) }}" method="POST" data-item-type="transaction"><button class="workspace-text-button danger" type="submit" aria-label="Delete {{ transaction.title }}">delete</button></form></div></td>
+                    </tr>
+                    {% endfor %}</tbody>
+                </table>
+            </div>
+            {% elif subscription %}<p class="workspace-empty">No payments for this subscription this month. Choose another month or <a href="{{ url_for('subscriptions', pay=subscription.id) }}">record a payment</a>.</p>{% else %}<p class="workspace-empty">No transactions this month. Record your first income or expense using the form.</p>{% endif %}
+        </section>
+    </div>
+</section>
+{% endblock %}
+
+{% block status_label %}expense-tracker{% endblock %}
+{% block form_eyebrow %}finance / {{ 'edit' if form_values.id else 'new' }}{% endblock %}
+{% block form_title %}{{ 'Edit transaction' if form_values.id else ('Subscription payments' if subscription else 'Record a transaction') }}{% endblock %}
+{% block form_description %}Track actual money in and out. Use Subscriptions to record a linked subscription payment.{% endblock %}
+{% block form_panel %}
+{% if error %}<p class="upload-error-message" role="alert">{{ error }}</p>{% endif %}
+{% if subscription and not form_values.id %}
+<p class="workspace-hint">Record a payment for {{ subscription.name }} to add a Bills expense and advance its billing schedule.</p>
+<a class="workspace-button" href="{{ url_for('subscriptions', pay=subscription.id, _anchor='subscription-payment-form') }}">record payment</a>
+<p class="workspace-hint"><a href="{{ url_for('expenses', month=selected_month) }}">Record another income or expense</a></p>
+{% else %}
+{% if form_values.subscription_due_on %}<p class="workspace-hint">Subscription bill due {{ form_values.subscription_due_on.isoformat() }}. Editing or deleting this expense does not change its billing schedule.</p>{% endif %}
+<form id="transaction-form" class="panel-form" action="{{ url_for('save_transaction', month=selected_month, subscription=subscription.id if subscription else none) }}" method="POST">
+    {% if form_values.id %}<input type="hidden" name="id" value="{{ form_values.id }}">{% endif %}
+    <div class="field"><label for="transaction-title">title</label><input id="transaction-title" name="title" maxlength="200" value="{{ form_values.title|default('') }}" placeholder="e.g. Groceries or monthly salary" required></div>
+    <div class="panel-field-row">
+        <div class="field"><label for="transaction-kind">type</label><select id="transaction-kind" name="kind" required><option value="expense" {% if form_values.kind == 'expense' %}selected{% endif %}>Expense</option>{% if not form_values.subscription_due_on %}<option value="income" {% if form_values.kind == 'income' %}selected{% endif %}>Income</option>{% endif %}</select></div>
+        <div class="field"><label for="transaction-category">category</label><select id="transaction-category" name="category" required>{% for kind, names in categories.items() %}<optgroup label="{{ kind|title }}" data-transaction-kind="{{ kind }}">{% for name in names %}<option value="{{ name }}" {% if form_values.kind == kind and form_values.category == name %}selected{% endif %}>{{ name|title }}</option>{% endfor %}</optgroup>{% endfor %}</select></div>
+    </div>
+    <div class="field"><label for="transaction-amount">amount</label><div class="price-input"><span>$</span><input id="transaction-amount" name="amount" type="number" min="0.01" max="9999999999.99" step="0.01" value="{{ form_values.amount|default('') }}" placeholder="0.00" required></div></div>
+    <div class="field"><label for="transaction-date">date</label><input id="transaction-date" name="occurred_on" type="date" min="2000-01-01" max="2200-12-31" value="{{ form_values.occurred_on }}" required></div>
+    <div class="field"><label for="transaction-description">details (optional)</label><textarea id="transaction-description" name="description" rows="3" maxlength="2000" placeholder="Payment details or a reminder…">{{ form_values.description|default('') }}</textarea></div>
+    <button class="panel-submit" type="submit">{{ 'save changes' if form_values.id else 'save transaction' }}</button>
+    {% if form_values.id %}<a class="workspace-link" href="{{ url_for('expenses', month=selected_month, subscription=subscription.id if subscription else none) }}">cancel editing</a>{% endif %}
+</form>
+{% endif %}
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='js/expenses.js') }}"></script>
+{% endblock %}

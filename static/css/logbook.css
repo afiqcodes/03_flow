@@ -1,0 +1,670 @@
+/* Logbook styles. Keep responsive overrides in this file. */
+
+.logbook-overview {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    border: 1px solid var(--theme-border, #e2e2e4);
+    border-radius: 9px;
+    background: var(--theme-surface, #fafafa);
+    color: var(--theme-secondary, #77777c);
+    font-size: 10px;
+}
+
+.logbook-overview strong {
+    color: var(--theme-text, #1d1d1f);
+    font-size: 17px;
+}
+
+.logbook-overview p {
+    margin: 0;
+    font-size: 9px;
+}
+
+.logbook-hint {
+    margin: 0 0 12px;
+    color: var(--theme-secondary, #78787e);
+    font-size: 10px;
+    line-height: 1.6;
+}
+
+.logbook-error {
+    padding: 10px 12px;
+    margin: 0 0 14px;
+    border-radius: 6px;
+    background: #fff0ef;
+    color: #ad3931;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+/* Daily rows */
+
+.logbook-day {
+    display: grid;
+    grid-template-columns: 55px minmax(0, 1fr) auto 42px;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 8px 14px;
+    border: 0;
+    border-bottom: 1px solid var(--theme-border, #ededee);
+    background: var(--theme-raised, #fff);
+    color: var(--theme-secondary, #7d7d83);
+    text-align: left;
+    font: inherit;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.logbook-day:last-child {
+    border-bottom: 0;
+}
+
+.logbook-day.is-weekend {
+    background: var(--theme-surface, #f7f7fa);
+}
+
+.logbook-day.is-today {
+    box-shadow: inset 3px 0 #438656;
+}
+
+.logbook-day:hover {
+    background: var(--theme-soft, #efeff3);
+}
+
+.logbook-day:focus-visible,
+.logbook-month summary:focus-visible {
+    outline: 2px solid #438656;
+    outline-offset: -3px;
+}
+
+.logbook-day time {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+}
+
+.logbook-day time strong {
+    color: var(--theme-text, #45454b);
+    font-size: 12px;
+}
+
+.logbook-day time span {
+    font-size: 9px;
+}
+
+.logbook-day-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.has-entry .logbook-day-title {
+    color: var(--theme-text, #29292e);
+    font-weight: 600;
+}
+
+.logbook-day-title small {
+    margin-left: 8px;
+    color: #438656;
+    font-size: 8px;
+}
+
+/* Day types */
+
+.day-type {
+    display: inline-block;
+    padding: 4px 7px;
+    border-radius: 5px;
+    font-size: 9px;
+    white-space: nowrap;
+}
+
+.day-type-work {
+    background: #fff1da;
+    color: #855710;
+}
+
+.day-type-holiday {
+    background: #e8f4ed;
+    color: #2c7147;
+}
+
+.day-type-metime {
+    background: #f0eafa;
+    color: #7850a0;
+}
+
+.day-type-family {
+    background: #e7f0fc;
+    color: #376ba0;
+}
+
+.logbook-image-count {
+    font-size: 8px;
+    color: var(--theme-secondary, #85858b);
+    text-align: right;
+}
+
+.logbook-add-mark {
+    grid-column: 4;
+    text-align: right;
+    color: var(--theme-secondary, #8b8b92);
+    font-size: 16px;
+}
+
+/* Daily detail dialog */
+
+.logbook-dialog {
+    width: min(1000px, calc(100% - 48px));
+    max-width: none;
+    max-height: calc(100dvh - 48px);
+    padding: 0;
+    border: 1px solid var(--theme-border, #e3e1eb);
+    border-radius: 16px;
+    background: var(--theme-raised, #fdfdff);
+    color: var(--theme-text, #24232d);
+    box-shadow: 0 28px 90px #24213640;
+    font: inherit;
+}
+
+.logbook-dialog::backdrop {
+    background: #29273866;
+    backdrop-filter: blur(5px);
+}
+
+.logbook-dialog [hidden] {
+    display: none;
+}
+
+.logbook-dialog-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.8fr) minmax(270px, 1fr);
+    height: min(780px, calc(100dvh - 50px));
+}
+
+.logbook-dialog-main,
+.logbook-dialog-sidebar {
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--theme-border, #d8d5e5) transparent;
+}
+
+.logbook-dialog-main {
+    padding: 36px;
+}
+
+.logbook-dialog-sidebar {
+    display: flex;
+    flex-direction: column;
+    padding: 88px 28px 28px;
+    border-left: 1px solid var(--theme-border, #e6e3ee);
+    background: linear-gradient(145deg, var(--theme-surface, #f8f7fc), var(--theme-surface, #faf9fd));
+}
+
+.logbook-icon {
+    width: 19px;
+    height: 19px;
+    flex: 0 0 auto;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.logbook-close {
+    position: absolute;
+    z-index: 1;
+    top: 24px;
+    right: 28px;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid var(--theme-border, #dedbe8);
+    border-radius: 9px;
+    background: var(--theme-raised, #fdfcff);
+    color: var(--theme-secondary, #595669);
+    cursor: pointer;
+}
+
+.logbook-close .logbook-icon {
+    width: 15px;
+    height: 15px;
+}
+
+.logbook-close:hover,
+.logbook-download:hover {
+    background: var(--theme-soft, #efecf8);
+    border-color: var(--theme-border, #c4bbde);
+}
+
+.logbook-close:focus-visible,
+.logbook-download:focus-visible,
+.logbook-action:focus-visible {
+    outline: 2px solid var(--theme-accent, #8258d4);
+    outline-offset: 3px;
+}
+
+.logbook-date-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 0 24px;
+    color: var(--theme-secondary, #898397);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.logbook-dialog h2 {
+    margin: 0 0 20px;
+    font-size: 21px;
+    overflow-wrap: anywhere;
+}
+
+.logbook-dialog-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.logbook-dialog .day-type,
+.logbook-location-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    max-width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.logbook-dialog .day-type::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.logbook-dialog .day-type-metime {
+    background: #efe8fc;
+    color: #753ee6;
+}
+
+.logbook-location-chip {
+    background: var(--theme-soft, #efedf4);
+    color: var(--theme-secondary, #585463);
+    overflow-wrap: anywhere;
+}
+
+.logbook-location-chip .logbook-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.logbook-note-section,
+.logbook-pictures-section {
+    margin-top: 26px;
+    padding-top: 25px;
+    border-top: 1px solid var(--theme-border, #e6e3ee);
+}
+
+.logbook-section-label {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin: 0 0 18px;
+    color: var(--theme-secondary, #827b91);
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.5;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.logbook-section-label .logbook-icon {
+    color: var(--theme-secondary, #635d72);
+}
+
+#logbook-dialog-description {
+    margin: 0;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+#logbook-dialog-status,
+.logbook-empty-pictures {
+    margin: 20px 0 0;
+    color: var(--theme-secondary, #898397);
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.logbook-sidebar-section {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--theme-border, #e6e3ee);
+}
+
+.logbook-sidebar-section:last-of-type {
+    border-bottom: 0;
+}
+
+.logbook-date-value {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 9px;
+    background: var(--theme-soft, #efedf6);
+    color: var(--theme-secondary, #585463);
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+.logbook-sidebar-chips {
+    display: flex;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.logbook-action {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 52px;
+    margin-top: auto;
+    border-radius: 9px;
+    background: var(--theme-accent, #292730);
+    color: var(--theme-on-accent, #fff);
+    font-size: 12px;
+    text-decoration: none;
+}
+
+/* Picture cards and downloads in the main column */
+
+.logbook-gallery {
+    display: grid;
+    gap: 16px;
+}
+
+.logbook-gallery figure {
+    min-width: 0;
+    margin: 0;
+    padding: 7px;
+    border: 1px solid var(--theme-border, #ded9ed);
+    border-radius: 13px;
+    background: var(--theme-raised, #fff);
+}
+
+.logbook-picture-preview {
+    display: block;
+    width: 100%;
+    height: 230px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: var(--theme-soft, #f0edf9);
+}
+
+.logbook-gallery figcaption {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 8px 7px;
+}
+
+.logbook-file-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--theme-soft, #efe9fb);
+    color: var(--theme-accent, #7950d0);
+}
+
+.logbook-file-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.logbook-file-info strong {
+    overflow-wrap: anywhere;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.logbook-file-info small {
+    color: var(--theme-secondary, #898397);
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.logbook-download {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid var(--theme-border, #dedbe8);
+    border-radius: 10px;
+    background: var(--theme-surface, #f8f7fc);
+    color: var(--theme-text, #37323f);
+    font-size: 10px;
+    text-decoration: none;
+}
+
+.logbook-download .logbook-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.logbook-attachment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.logbook-attachment-list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logbook-attachment-list .logbook-file-icon {
+    background: var(--theme-soft, #eeecf5);
+    color: var(--theme-secondary, #5f586f);
+}
+
+.logbook-cancel {
+    color: var(--theme-text, #45454c);
+    text-align: center;
+    font-size: 10px;
+    text-underline-offset: 3px;
+}
+
+/* Image upload form */
+
+#logbook-form .field input[type="file"] {
+    height: auto;
+    padding: 10px;
+    font-size: 9px;
+}
+
+#logbook-form .field input[type="file"]::file-selector-button {
+    padding: 6px;
+    margin-right: 8px;
+    border: 1px solid var(--theme-border, #dddde2);
+    border-radius: 4px;
+    background: var(--theme-soft, #f5f5f7);
+    font: inherit;
+    cursor: pointer;
+}
+
+.logbook-upload-previews {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+}
+
+.logbook-upload-previews img {
+    width: 100%;
+    height: 65px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.logbook-existing-images {
+    min-width: 0;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid var(--theme-border, #dedee2);
+    border-radius: 8px;
+}
+
+.logbook-existing-images legend {
+    font-size: 10px;
+    color: var(--theme-secondary, #78787e);
+}
+
+.logbook-existing-image {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 9px;
+    font-size: 9px;
+    cursor: pointer;
+}
+
+.logbook-existing-image > img {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.logbook-existing-image > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.logbook-remove {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 5px;
+    color: #ad3931;
+}
+
+#logbook-upload-status:empty,
+.logbook-upload-previews:empty {
+    display: none;
+}
+
+/* Responsive layout */
+
+@media (min-width: 601px) and (max-width: 850px) {
+    .logbook-dialog-layout {
+        grid-template-columns: minmax(0, 1.5fr) minmax(230px, 1fr);
+    }
+
+    .logbook-dialog-main,
+    .logbook-dialog-sidebar {
+        padding-left: 22px;
+        padding-right: 22px;
+    }
+
+    .logbook-gallery figcaption {
+        flex-wrap: wrap;
+    }
+
+    .logbook-download {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .logbook-content {
+        padding: 23px 16px;
+    }
+
+    .logbook-day {
+        grid-template-columns: 48px minmax(0, 1fr) auto;
+        gap: 7px;
+        padding: 9px 10px;
+    }
+
+    .logbook-image-count {
+        display: none;
+    }
+
+    .logbook-add-mark {
+        grid-column: 3;
+    }
+
+    .logbook-dialog {
+        width: calc(100% - 24px);
+        max-height: calc(100dvh - 24px);
+    }
+
+    .logbook-dialog-layout {
+        display: block;
+        height: auto;
+    }
+
+    .logbook-dialog-main,
+    .logbook-dialog-sidebar {
+        overflow: visible;
+        padding: 24px 20px;
+    }
+
+    .logbook-dialog-main {
+        padding-top: 66px;
+    }
+
+    .logbook-dialog-sidebar {
+        border-top: 1px solid var(--theme-border, #e6e3ee);
+        border-left: 0;
+    }
+
+    .logbook-close {
+        top: 16px;
+        right: 20px;
+    }
+
+    .logbook-picture-preview {
+        height: 180px;
+    }
+
+    .logbook-gallery figcaption {
+        flex-wrap: wrap;
+    }
+
+    .logbook-download {
+        justify-content: center;
+        width: 100%;
+    }
+}

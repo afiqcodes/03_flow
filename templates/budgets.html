@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block title %}Budget · flow{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/budgets.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="content budget-content">
+    <div class="heading calendar-heading">
+        <div><p class="eyebrow">~/flow/budget</p><h1>Budget</h1></div>
+        <label class="year-picker" for="budget-stats-year">
+            <span>stats year</span>
+            <select id="budget-stats-year" aria-label="Choose budget statistics year">
+                {% for year_section in year_sections %}
+                <option
+                    value="{{ year_section.year }}"
+                    data-income="{{ year_section.total }}"
+                    data-expenses="{{ year_section.total_expenses }}"
+                    data-remaining="{{ year_section.total_remaining }}"
+                    data-planned="{{ year_section.planned_count }}"
+                    {% if year_section.year == current_year %}selected{% endif %}
+                >{{ year_section.year }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+    {% set save_message = 'Budget saved.' %}{% include 'save_notice.html' %}
+
+    <div class="stats-grid budget-stats" aria-label="Selected year budget overview" aria-live="polite">
+        <article class="stat-card"><span id="budget-stats-income-label">{{ current_year }} income</span><strong id="budget-stats-income">${{ "%.2f"|format(current_total) }}</strong><small id="budget-stats-planned">{{ current_planned_count }}/12 months planned</small></article>
+        <article class="stat-card"><span>expenses</span><strong id="budget-stats-expenses">${{ "%.2f"|format(current_expenses) }}</strong><small>across planned months</small></article>
+        <article class="stat-card"><span>remaining</span><strong id="budget-stats-remaining" class="{% if current_remaining < 0 %}negative{% endif %}">${{ "%.2f"|format(current_remaining) }}</strong><small>after savings and expenses</small></article>
+    </div>
+
+    <div class="calendar-list">
+        {% for year_section in year_sections %}
+        <details class="calendar-section" {% if year_section.year == current_year %}open{% endif %}>
+            <summary>
+                <span class="calendar-chevron" aria-hidden="true">›</span>
+                <div><strong>{{ year_section.year }}</strong><small>{{ year_section.planned_count }}/12 months planned</small></div>
+                <span class="calendar-summary">${{ "%.2f"|format(year_section.total_remaining) }} remaining</span>
+            </summary>
+
+            <div class="month-grid">
+                {% for month in year_section.months %}
+                <article class="month-card {% if month.budget %}planned{% endif %}">
+                    <div class="month-card-header">
+                        <span>{{ month.name[:3] }}</span>
+                        {% if month.budget %}
+                        <form class="delete-form" action="{{ url_for('delete_budget', budget_id=month.budget.id) }}" method="POST" data-item-type="monthly budget" data-item-name="{{ month.name }} {{ year_section.year }}"><button class="month-reset" type="submit" aria-label="Reset {{ month.name }} {{ year_section.year }}">×</button></form>
+                        {% endif %}
+                    </div>
+                    {% if month.budget %}
+                    <div class="month-finances">
+                        <div><span>income</span><strong>${{ "%.2f"|format(month.budget.income) }}</strong></div>
+                        <div><span>savings</span><strong>${{ "%.2f"|format(month.budget.savings) }}</strong></div>
+                        <p>expense</p>
+                        <div><span>food</span><strong>${{ "%.2f"|format(month.budget.food) }}</strong></div>
+                        <div><span>transport</span><strong>${{ "%.2f"|format(month.budget.transport) }}</strong></div>
+                        <div><span>bills</span><strong>${{ "%.2f"|format(month.budget.bills) }}</strong></div>
+                        <div><span>entertainment</span><strong>${{ "%.2f"|format(month.budget.entertainment) }}</strong></div>
+                        <div class="month-remaining"><span>remaining</span><strong class="{% if month.budget.remaining < 0 %}negative{% endif %}">${{ "%.2f"|format(month.budget.remaining) }}</strong></div>
+                    </div>
+                    {% else %}
+                    <strong class="not-set">—</strong>
+                    <small class="month-not-set">not set</small>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </details>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block status_label %}budget-planner{% endblock %}
+
+{% block form_eyebrow %}planning / monthly{% endblock %}
+{% block form_title %}Set monthly budget{% endblock %}
+{% block form_description %}Remaining money is income minus savings and all expenses.{% endblock %}
+
+{% block form_panel %}
+<form id="budget-form" class="panel-form" action="{{ url_for('set_budget') }}" method="POST">
+    <div class="panel-field-row">
+        <div class="field">
+            <label for="budget-year">year</label>
+            <input id="budget-year" name="year" type="number" min="2000" max="2200" value="{{ current_year }}" required>
+        </div>
+        <div class="field">
+            <label for="budget-month">month</label>
+            <select id="budget-month" name="month" required>
+                {% for month_name in month_names %}
+                <option value="{{ loop.index }}" {% if loop.index == current_month %}selected{% endif %}>{{ month_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="field">
+        <label for="budget-income">income</label>
+        <div class="price-input"><span>$</span><input id="budget-income" data-budget-value name="income" type="number" min="0" max="9999999999.99" step="0.01" placeholder="0.00" required></div>
+    </div>
+    <div class="field">
+        <label for="budget-savings">savings</label>
+        <div class="price-input"><span>$</span><input id="budget-savings" data-budget-value name="savings" type="number" min="0" max="9999999999.99" step="0.01" placeholder="0.00" required></div>
+    </div>
+
+    <fieldset class="expense-fields">
+        <legend>expense</legend>
+        {% for field_name in expense_fields %}
+        <div class="field">
+            <label for="budget-{{ field_name }}">{{ field_name }}</label>
+            <div class="price-input"><span>$</span><input id="budget-{{ field_name }}" data-budget-value name="{{ field_name }}" type="number" min="0" max="9999999999.99" step="0.01" placeholder="0.00" required></div>
+        </div>
+        {% endfor %}
+    </fieldset>
+
+    <output id="budget-remaining-preview" class="remaining-preview" for="budget-income budget-savings budget-food budget-transport budget-bills budget-entertainment">
+        <span>projected remaining</span>
+        <strong>$0.00</strong>
+    </output>
+
+    <button class="panel-submit" type="submit">save monthly budget</button>
+</form>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='js/budgets.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,200 @@
+.calendar-content {
+    gap: 0;
+}
+
+.calendar-page-heading {
+    align-items: center;
+}
+
+.calendar-year-nav {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+}
+
+.calendar-year-nav strong {
+    min-width: 42px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.calendar-year-nav a {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    border: 1px solid var(--theme-border, #dedee1);
+    border-radius: 6px;
+    background: var(--theme-surface, #fafafa);
+    color: var(--theme-secondary, #4c4c52);
+    text-decoration: none;
+    font-size: 20px;
+    line-height: 1;
+}
+
+.calendar-year-nav a:hover,
+.calendar-year-nav a:focus-visible {
+    background: var(--theme-muted, #ededf0);
+}
+
+.calendar-overview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 16px;
+    color: var(--theme-secondary, #85858a);
+    font-size: 10px;
+}
+
+.calendar-overview strong {
+    color: var(--theme-text, #333338);
+}
+
+.calendar-notice {
+    margin: 0 0 14px;
+    padding: 9px 11px;
+    border-radius: 6px;
+    background: #fff6e8;
+    color: #8b601f;
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.year-month-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: start;
+    gap: 12px;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 5px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--theme-border, #d2d2d7) transparent;
+}
+
+.year-month {
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid var(--theme-border, #e0e0e3);
+    border-radius: 9px;
+    background: var(--theme-surface, #fafafa);
+}
+
+.year-month h2 {
+    margin: 0 0 11px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.year-month-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+    text-align: center;
+}
+
+.weekday {
+    color: var(--theme-quiet, #98989d);
+    font-size: 8px;
+    line-height: 20px;
+}
+
+.calendar-day {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    min-height: 20px;
+    border-radius: 5px;
+    color: var(--theme-secondary, #4c4c52);
+    font-size: 9px;
+}
+
+.calendar-day.is-holiday {
+    background: var(--calendar-highlight, #000);
+    color: var(--calendar-on-highlight, #fff);
+    font-weight: 700;
+}
+
+.calendar-day.is-today {
+    background: var(--calendar-highlight, #000);
+    color: var(--calendar-on-highlight, #fff);
+    outline: 1px solid var(--calendar-on-highlight, #fff);
+    outline-offset: -1px;
+    font-weight: 700;
+}
+
+.calendar-holiday-list {
+    margin-top: 28px;
+}
+
+.calendar-holiday-list h3 {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 0 12px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--theme-border, #e5e5e7);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.calendar-holiday-list h3 span {
+    color: var(--theme-quiet, #929297);
+}
+
+.calendar-holiday-month + .calendar-holiday-month {
+    margin-top: 14px;
+}
+
+.calendar-holiday-month h4 {
+    margin: 0;
+    padding: 0 0 3px;
+    color: var(--theme-secondary, #62626a);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.calendar-holiday-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--theme-border, #ededee);
+    font-size: 10px;
+    line-height: 1.4;
+}
+
+.calendar-holiday-row span {
+    min-width: 0;
+}
+
+.calendar-holiday-row time {
+    flex: 0 0 auto;
+    color: var(--theme-quiet, #929297);
+    font-size: 9px;
+}
+
+.calendar-holiday-list > p {
+    color: var(--theme-quiet, #929297);
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.calendar-data-source a {
+    color: var(--theme-secondary, #62626a);
+    text-underline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+    .year-month-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    .year-month-grid {
+        grid-template-columns: 1fr;
+    }
+}

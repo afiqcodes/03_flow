@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Logbook · flow{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/logbook.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="content logbook-content">
+    <div class="heading calendar-heading">
+        <div><p class="eyebrow">~/flow/logbook</p><h1>Logbook</h1></div>
+        <form action="{{ url_for('logbook') }}" method="GET" class="logbook-year-form">
+            <label class="year-picker" for="logbook-year">
+                <span>year</span>
+                <select id="logbook-year" name="year">
+                    {% for year in years %}
+                    <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <noscript><button type="submit">View year</button></noscript>
+        </form>
+    </div>
+    <div class="logbook-overview">
+        <span><strong>{{ entry_count }}</strong> {{ 'day' if entry_count == 1 else 'days' }} recorded</span>
+        <span><strong>{{ image_count }}</strong> {{ 'image' if image_count == 1 else 'images' }}</span>
+        <p>Every day has a place here.</p>
+    </div>
+    {% set save_message = 'Your log has been saved.' %}{% include 'save_notice.html' %}
+    {% if not entry_count %}<p class="logbook-hint">No logs for {{ selected_year }} yet. Choose any day or start in the form window.</p>{% endif %}
+    <div class="calendar-list logbook-months">
+        {% for month in months %}
+        <details class="calendar-section logbook-month" {% if month.number == selected_month %}open{% endif %}>
+            <summary>
+                <span class="calendar-chevron" aria-hidden="true">›</span>
+                <div><strong>{{ month.name }}</strong><small>{{ month.count }} / {{ month.days|length }} days recorded</small></div>
+                <span class="calendar-summary">{{ selected_year }}</span>
+            </summary>
+            <div class="logbook-days">
+                {% for day in month.days %}
+                <button type="button" class="logbook-day {% if day.entry %}has-entry{% endif %} {% if day.date.weekday() >= 5 %}is-weekend{% endif %} {% if day.date == today %}is-today{% endif %}"
+                    data-logbook-day="{{ day.date.isoformat() }}"
+                    data-day-url="{{ url_for('logbook_day', entry_date=day.date.isoformat()) }}"
+                    data-create-url="{{ url_for('logbook', date=day.date.isoformat()) }}"
+                    aria-haspopup="dialog" aria-controls="logbook-dialog"
+                    aria-label="{{ day.date.strftime('%A, %d %B %Y') }}: {{ day.entry.title if day.entry else 'No log yet' }}">
+                    <time datetime="{{ day.date.isoformat() }}"><strong>{{ '%02d'|format(day.date.day) }}</strong><span>{{ day.date.strftime('%a') }}</span></time>
+                    <span class="logbook-day-title">{{ day.entry.title if day.entry else 'No log yet' }}{% if day.date == today %}<small>today</small>{% endif %}</span>
+                    {% if day.entry %}<span class="day-type day-type-{{ day.entry.day_type|lower }}">{{ day.entry.day_type }}</span><span class="logbook-image-count">{{ day.entry.image_count }} img</span>{% else %}<span class="logbook-add-mark" aria-hidden="true">+</span>{% endif %}
+                </button>
+                {% endfor %}
+            </div>
+        </details>
+        {% endfor %}
+    </div>
+</section>
+
+{% include "logbook_dialog.html" %}
+{% endblock %}
+
+{% block status_label %}daily-logbook{% endblock %}
+{% block form_eyebrow %}diary / daily{% endblock %}
+{% block form_title %}{{ 'Edit daily log' if form_values.id else 'Write a daily log' }}{% endblock %}
+{% block form_description %}Workdays, weekends, and everything in between. Choose any date, past or future.{% endblock %}
+{% block form_panel %}
+{% if error %}
+<p class="logbook-error" role="alert">{{ error }}{% if request.files %} Please select your new images again.{% endif %}</p>
+{% endif %}
+<form id="logbook-form" class="panel-form" action="{{ url_for('save_logbook') }}" method="POST" enctype="multipart/form-data">
+    {% if form_values.id %}
+    <input type="hidden" name="id" value="{{ form_values.id }}">
+    {% endif %}
+
+    <div class="field">
+        <label for="logbook-title">title for the day</label>
+        <input id="logbook-title" name="title" maxlength="200" value="{{ form_values.title|default('') }}" placeholder="A day worth remembering" required>
+    </div>
+    <div class="field">
+        <label for="logbook-location">location</label>
+        <input id="logbook-location" name="location" maxlength="200" value="{{ form_values.location|default('') }}" placeholder="Office, home, or somewhere new" required>
+    </div>
+    <div class="panel-field-row">
+        <div class="field">
+            <label for="logbook-date">date</label>
+            <input id="logbook-date" name="entry_date" type="date" value="{{ form_values.entry_date }}" required>
+        </div>
+        <div class="field">
+            <label for="logbook-type">type of day</label>
+            <select id="logbook-type" name="day_type" required>
+                {% for day_type in day_types %}
+                <option value="{{ day_type }}" {% if day_type == form_values.day_type %}selected{% endif %}>{{ day_type }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <div class="field">
+        <label for="logbook-description">what happened today?</label>
+        <textarea id="logbook-description" name="description" rows="7" maxlength="20000" placeholder="What did you work on, do, or enjoy?" required>{{ form_values.description|default('') }}</textarea>
+    </div>
+
+    {% if existing_images %}
+    <fieldset class="logbook-existing-images">
+        <legend>saved images</legend>
+        <p class="logbook-hint">Images stay attached unless you select them for removal.</p>
+        {% for picture in existing_images %}
+        <label class="logbook-existing-image">
+            <img src="{{ url_for('logbook_image', image_id=picture.id) }}" alt="{{ picture.filename }}" loading="lazy">
+            <span>{{ picture.filename }}<span class="logbook-remove"><input type="checkbox" name="remove_images" value="{{ picture.id }}" {% if picture.id|string in request.form.getlist('remove_images') %}checked{% endif %}> Remove on save</span></span>
+        </label>
+        {% endfor %}
+    </fieldset>
+    {% endif %}
+
+    <div class="field">
+        <label for="logbook-images">{{ 'add more images' if form_values.id else 'upload images' }} <span>(optional)</span></label>
+        <input id="logbook-images" name="images" type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp" multiple
+            data-max-images="{{ max_images }}" data-max-bytes="{{ max_image_bytes }}"
+            aria-describedby="logbook-upload-help">
+        <small id="logbook-upload-help" class="logbook-hint">JPEG, PNG, GIF, WebP · up to {{ max_images }} images per day · {{ max_image_bytes // (1024 * 1024) }} MB and {{ max_image_pixels // 1000000 }} megapixels each.</small>
+        <p id="logbook-upload-status" class="logbook-hint" aria-live="polite"></p>
+        <div id="logbook-upload-previews" class="logbook-upload-previews"></div>
+    </div>
+    <button class="panel-submit" type="submit">{{ 'save changes' if form_values.id else 'save daily log' }}</button>
+    {% if form_values.id %}
+    <a class="logbook-cancel" href="{{ url_for('logbook', year=selected_year, month=selected_month) }}">cancel editing</a>
+    {% endif %}
+</form>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ url_for('static', filename='js/logbook.js') }}"></script>
+{% endblock %}

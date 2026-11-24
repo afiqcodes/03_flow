@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar · flow{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/calendar.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="content calendar-content">
+    <div class="heading calendar-heading calendar-page-heading">
+        <div><p class="eyebrow">~/flow/calendar</p><h1>Calendar</h1></div>
+        <div class="calendar-year-nav" aria-label="Calendar year navigation">
+            {% if year > 1 %}<a href="{{ url_for('calendar_page', year=year - 1, state=state_code) }}" aria-label="Previous year">‹</a>{% endif %}
+            <strong>{{ year }}</strong>
+            {% if year < 9999 %}<a href="{{ url_for('calendar_page', year=year + 1, state=state_code) }}" aria-label="Next year">›</a>{% endif %}
+        </div>
+    </div>
+    <div class="calendar-overview">
+        <span><strong>{{ state_name }}</strong> public holidays</span>
+        <span><strong>{{ holiday_count }}</strong> {{ 'holiday' if holiday_count == 1 else 'holidays' }} listed</span>
+    </div>
+    {% if holiday_message %}<p class="calendar-notice" role="status">{{ holiday_message }}</p>{% endif %}
+    <div class="year-month-grid" aria-label="{{ year }} calendar for {{ state_name }}">
+        {% for month in months %}
+        <section class="year-month" aria-label="{{ month.name }} {{ year }}">
+            <h2>{{ month.name }}</h2>
+            <div class="year-month-days">
+                {% for weekday in ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun') %}
+                <span class="weekday">{{ weekday }}</span>
+                {% endfor %}
+                {% for week in month.weeks %}
+                    {% for day in week %}
+                        {% if day %}
+                            {% set day_holidays = holidays_by_date.get(day.isoformat(), []) %}
+                            <time class="calendar-day {% if day_holidays %}is-holiday{% endif %} {% if day == today %}is-today{% endif %}"
+                                datetime="{{ day.isoformat() }}"
+                                aria-label="{{ day.strftime('%A, %d %B %Y') }}{% if day_holidays %}: {{ day_holidays|join(', ') }}{% endif %}"
+                                {% if day_holidays %}title="{{ day_holidays|join(', ') }}"{% endif %}>{{ day.day }}</time>
+                        {% else %}
+                            <span class="calendar-day is-empty" aria-hidden="true"></span>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block status_label %}year-calendar{% endblock %}
+{% block form_eyebrow %}planning / yearly{% endblock %}
+{% block form_title %}Check the date{% endblock %}
+{% block form_description %}Choose a year and a Malaysian state or federal territory.{% endblock %}
+{% block form_panel %}
+<form class="panel-form calendar-settings" action="{{ url_for('calendar_page') }}" method="GET">
+    <div class="field">
+        <label for="calendar-year">year</label>
+        <input id="calendar-year" name="year" type="number" min="1" max="9999" value="{{ year }}" required>
+    </div>
+    <div class="field">
+        <label for="calendar-state">state or federal territory</label>
+        <select id="calendar-state" name="state">
+            {% for code, name in states %}
+            <option value="{{ code }}" {% if code == state_code %}selected{% endif %}>{{ name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button class="panel-submit" type="submit">View calendar</button>
+</form>
+<div class="calendar-holiday-list">
+    <h3>Public holidays <span>{{ holiday_count }}</span></h3>
+    {% if holiday_count %}
+        {% for month in months %}
+        {% if holidays_by_month[month.number] %}
+        <section class="calendar-holiday-month" aria-label="{{ month.name }} holidays">
+            <h4>{{ month.name }}</h4>
+            {% for holiday in holidays_by_month[month.number] %}
+            <div class="calendar-holiday-row">
+                <span>{{ holiday.name }}</span>
+                <time datetime="{{ holiday.date }}">{{ holiday.date }}</time>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+        {% endfor %}
+    {% else %}
+        <p>No holiday data is available for this selection yet.</p>
+    {% endif %}
+    <p class="calendar-data-source">Holiday data: <a href="https://malaysia-holiday.dydxsoft.my/api/docs">Malaysia Holiday API</a></p>
+</div>
+{% endblock %}

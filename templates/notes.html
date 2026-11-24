@@ -1,0 +1,60 @@
+{% extends "workspace.html" %}
+
+{% block title %}Notes · flow{% endblock %}
+
+{% block content %}
+<section class="content workspace-content">
+    <div class="heading workspace-heading"><div><p class="eyebrow">~/flow/notes</p><h1>Notes</h1></div><span class="item-count">{{ notes|length }} {% if search %}matching{% else %}saved{% endif %}</span></div>
+    {% set save_message = 'Note saved.' %}{% include 'save_notice.html' %}
+    <form class="workspace-filters" method="GET" action="{{ url_for('notes') }}" role="search">
+        <div class="field search-field"><label for="note-search">search notes</label><input id="note-search" name="q" type="search" maxlength="200" value="{{ search }}" placeholder="Search titles and content"></div>
+        <button class="workspace-button" type="submit">search</button>
+        {% if search %}<a class="workspace-link" href="{{ url_for('notes') }}">clear</a>{% endif %}
+    </form>
+    <div class="workspace-scroll note-list">
+        {% for note in notes %}
+        <article class="workspace-card note-card {% if note.pinned %}is-pinned{% endif %}">
+            <div class="note-heading"><h2>{{ note.title }}</h2>{% if note.pinned %}<span class="workspace-tag">pinned</span>{% endif %}</div>
+            {% if note.content|length > 180 %}
+            <p class="note-preview">{{ note.content[:180] }}…</p>
+            <details class="note-details"><summary>Read full note</summary><div class="note-body">{{ note.content }}</div></details>
+            {% else %}<div class="note-body">{{ note.content }}</div>{% endif %}
+            {% if note.project_title or note.task_title %}
+            <div class="note-links">
+                {% if note.project_title %}<a href="{{ url_for('projects', edit=note.project_id) }}">Project: {{ note.project_title }} ↗</a>{% endif %}
+                {% if note.task_title %}<a href="{{ url_for('index', edit=note.task_id) }}">Task: {{ note.task_title }} ↗</a>{% endif %}
+            </div>
+            {% endif %}
+            <div class="record-footer">
+                <time datetime="{{ note.updated_at.isoformat() }}">Updated {{ note.updated_at.strftime('%d %b %Y') }}</time>
+                <div class="record-actions">
+                    <a href="{{ url_for('notes', edit=note.id, q=search, _anchor='note-form') }}">edit</a>
+                    <form action="{{ url_for('pin_note', note_id=note.id, q=search) }}" method="POST"><button class="workspace-text-button" type="submit" aria-label="{{ 'Unpin' if note.pinned else 'Pin' }} {{ note.title }}">{{ 'unpin' if note.pinned else 'pin' }}</button></form>
+                    <form class="delete-form" action="{{ url_for('delete_note', note_id=note.id, q=search) }}" method="POST" data-item-type="note"><button class="workspace-text-button danger" type="submit" aria-label="Delete {{ note.title }}">delete</button></form>
+                </div>
+            </div>
+        </article>
+        {% else %}
+        <div class="empty-state"><p>{{ 'No notes match your search.' if search else 'No notes yet.' }}</p><span>{{ 'Try another word or clear the search.' if search else 'Capture an idea, a checklist, or something worth keeping.' }}</span></div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block status_label %}personal-notes{% endblock %}
+{% block form_eyebrow %}personal / {{ 'edit' if form_values.id else 'new' }}{% endblock %}
+{% block form_title %}{{ 'Edit note' if form_values.id else 'Write a note' }}{% endblock %}
+{% block form_description %}Keep thoughts, lists, and snippets together. Link them to your work when useful.{% endblock %}
+{% block form_panel %}
+{% if error %}<p class="upload-error-message" role="alert">{{ error }}</p>{% endif %}
+<form id="note-form" class="panel-form" action="{{ url_for('save_note', q=search) }}" method="POST">
+    {% if form_values.id %}<input type="hidden" name="id" value="{{ form_values.id }}">{% endif %}
+    <div class="field"><label for="note-title">title</label><input id="note-title" name="title" maxlength="200" value="{{ form_values.title|default('') }}" placeholder="Something to remember" required></div>
+    <div class="field"><label for="note-content">note</label><textarea id="note-content" name="content" rows="10" maxlength="20000" placeholder="An idea, meeting notes, or a simple checklist…" required>{{ form_values.content|default('') }}</textarea></div>
+    <label class="workspace-checkbox"><input type="checkbox" name="pinned" value="1" {% if form_values.pinned %}checked{% endif %}> Pin this note</label>
+    <div class="field"><label for="note-project">linked project (optional)</label><select id="note-project" name="project_id"><option value="">No project</option>{% for project in projects %}<option value="{{ project.id }}" {% if form_values.project_id|string == project.id|string %}selected{% endif %}>{{ project.title }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="note-task">linked task (optional)</label><select id="note-task" name="task_id"><option value="">No task</option>{% for task in tasks %}<option value="{{ task.id }}" {% if form_values.task_id|string == task.id|string %}selected{% endif %}>{{ task.title }}</option>{% endfor %}</select></div>
+    <button class="panel-submit" type="submit">{{ 'save changes' if form_values.id else 'save note' }}</button>
+    {% if form_values.id %}<a class="workspace-link" href="{{ url_for('notes', q=search) }}">cancel editing</a>{% endif %}
+</form>
+{% endblock %}

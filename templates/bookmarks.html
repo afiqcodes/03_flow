@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "macros.html" import type_icon, type_options %}
+
+{% block title %}Bookmarks · flow{% endblock %}
+
+{% block page_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/bookmarks.css') }}">
+{% endblock %}
+
+{% block content %}
+<section class="content bookmark-content">
+    <div class="heading bookmark-heading">
+        <div><p class="eyebrow">~/flow/bookmarks</p><h1>Bookmarks</h1></div>
+        <span class="item-count">{{ bookmarks|length }} saved</span>
+    </div>
+    {% set save_message = 'Bookmark saved.' %}{% include 'save_notice.html' %}
+
+    <div class="bookmark-summary" aria-label="Bookmark overview">
+        <div><strong>{{ bookmarks|length }}</strong><span>saved links</span></div>
+        <div><strong>{{ type_count }}</strong><span>types used</span></div>
+        <p>Keep useful links organized by the same categories used in your billing ledger.</p>
+    </div>
+
+    <div class="bookmark-list">
+        <div class="bookmark-list-header" aria-hidden="true"><span>bookmark</span><span>type</span><span>saved</span><span></span></div>
+        {% for bookmark in bookmarks %}
+        <article class="bookmark-row">
+            <div class="bookmark-identity">
+                {{ type_icon(bookmark.bookmark_type) }}
+                <div><a href="{{ bookmark.url }}" target="_blank" rel="noopener noreferrer">{{ bookmark.title }} <span aria-hidden="true">↗</span></a><small>{{ bookmark.url }}</small></div>
+            </div>
+            <span class="bookmark-type">{{ bookmark.bookmark_type }}</span>
+            <time datetime="{{ bookmark.created_at.isoformat() }}">{{ bookmark.created_at.strftime('%b %d, %Y') }}</time>
+            <form class="delete-form" action="{{ url_for('delete_bookmark', bookmark_id=bookmark.id) }}" method="POST" data-item-name="{{ bookmark.title }}" data-item-type="bookmark"><button class="delete-button" type="submit" aria-label="Delete {{ bookmark.title }}">delete</button></form>
+        </article>
+        {% else %}
+        <div class="empty-state bookmark-empty"><p>no bookmarks yet.</p><span>use the input form to save your first link</span></div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+
+{% block status_label %}bookmark-vault{% endblock %}
+
+{% block form_eyebrow %}information / new{% endblock %}
+{% block form_title %}Save a bookmark{% endblock %}
+{% block form_description %}Store a useful link and classify it for quick retrieval.{% endblock %}
+
+{% block form_panel %}
+<form class="panel-form" action="{{ url_for('add_bookmark') }}" method="POST">
+    <div class="field">
+        <label for="bookmark-title">name</label>
+        <input id="bookmark-title" name="title" type="text" placeholder="e.g. Flask docs" autocomplete="off" required>
+    </div>
+    <div class="field">
+        <label for="bookmark-url">url</label>
+        <input id="bookmark-url" name="url" type="url" placeholder="https://example.com" autocomplete="url" required>
+    </div>
+    <div class="field">
+        <label for="bookmark-type">type</label>
+        <select id="bookmark-type" name="bookmark_type" required>{{ type_options(item_types) }}</select>
+    </div>
+    <button class="panel-submit" type="submit">save bookmark</button>
+</form>
+{% endblock %}
